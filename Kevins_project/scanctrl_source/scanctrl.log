@@ -4,20 +4,20 @@ Copyright (c) 1998-2010 PowerBasic Inc.
 Englewood, Florida USA
 All Rights Reserved
 
-Primary source:  C:\ClasCC\KEVINS~2\SCANCT~1\scanctrl.bas   {3678 total lines}
+Primary source:  C:\ClasCC\KEVINS~2\SCANCT~1\scanctrl.bas   {3968 total lines}
 Target compilation:  scanctrl.exe
-Compile time:  0.1 seconds, at 4413600 lines/minute
+Compile time:  0.1 seconds, at 4761600 lines/minute
 
-36884 bytes compiled code, 12883 bytes RTLibrary,
-2072 bytes string literals, and 6024 bytes dgroup.
+40948 bytes compiled code, 13139 bytes RTLibrary,
+2076 bytes string literals, and 6104 bytes dgroup.
 Executable stack size:  1048576 bytes.
-Disk image: 63488 bytes   Memory image: 20979 bytes.
+Disk image: 68608 bytes   Memory image: 21319 bytes.
 
 Component Files:
 ----------------
 C:\CLASCC\KEVINS~2\SCANCT~1\SCANCTRL.BAS
 .\INCLUDES\EZGUI50.INC
 .\INCLUDES\EZWMAIN50.INC
-REALBACKEND.INC
+BACKEND.INC
 
 
