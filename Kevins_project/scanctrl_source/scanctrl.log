@@ -1,23 +1,53 @@
-Classic PowerBASIC Console Compiler
-Classic PB/CC   Version 4.06 
-Copyright (c) 1998-2010 PowerBasic Inc.
+PowerBASIC 6 Console Compiler
+Copyright (c) 1998-2011 PowerBasic Inc.
 Englewood, Florida USA
 All Rights Reserved
 
-Primary source:  C:\ClasCC\KEVINS~2\SCANCT~1\scanctrl.bas   {3678 total lines}
-Target compilation:  scanctrl.exe
-Compile time:  0.1 seconds, at 4413600 lines/minute
+Primary source:  C:\Users\Kevin\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas   {3680 total lines}
+Target compilation:  scanctrl.EXE
+Compile time:  0.1 seconds, at 4416000 lines/minute
 
-36884 bytes compiled code, 12883 bytes RTLibrary,
-2072 bytes string literals, and 6024 bytes dgroup.
+34464 bytes compiled code, 14752 bytes RTLibrary,
+2196 bytes string literals, and 6964 bytes dgroup.
 Executable stack size:  1048576 bytes.
-Disk image: 63488 bytes   Memory image: 20979 bytes.
+Disk image: 62464 bytes   Memory image: 23912 bytes.
 
 Component Files:
 ----------------
-C:\CLASCC\KEVINS~2\SCANCT~1\SCANCTRL.BAS
-.\INCLUDES\EZGUI50.INC
-.\INCLUDES\EZWMAIN50.INC
-REALBACKEND.INC
+C:\Users\Kevin\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas
+C:\USERS\KEVIN\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\INCLUDES\EZGUI50.INC
+C:\USERS\KEVIN\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\INCLUDES\EZWMAIN50.INC
+C:\USERS\KEVIN\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\BACKEND.INC
 
 
+Code Extracted:
+---------------
+GUI_XPOS
+GUI_XONOFF
+GUI_YPOS
+GUI_YONOFF
+GUI_RPOS
+GUI_RONOFF
+GUI_POLAR
+GUI_CARTESIAN
+GUI_ALLPOS
+GUI_ALLOFF
+GUI_ALLON
+GUI_EXTRASCAN
+GUI_JOGYPLUS
+GUI_JOGXMINUS
+GUI_JOGXPLUS
+GUI_JOGYMINUS
+GUI_JOGRPLUS
+GUI_JOGRMINUS
+GUI_TRACKBAR
+GUI_JOGCONT
+GUI_JOGSTEP
+GUI_EXTRA
+GUIQUESTIONBOX
+GRAPHIC_START
+GRAPHIC_COLOR
+GRAPHIC_LINE
+GRAPHIC_LINETO
+GRAPHIC_END
+DRAWMAINPICTURE
