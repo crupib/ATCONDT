@@ -206,20 +206,14 @@ GLOBAL SCN AS ScanVars
 ' KeyVal& = GUICheckKey(CMsg&, CVal&)             (Check to see if key event occurred)
 ' EventName$ = GUIEventName(CMsg&)                (Return name of Event as a string. Used only for keyboard events right now)
 
-' -----------------------------------------------------------------------------------
-' Graphic Commands      Coordinates are in FULL INCHES using floating point values
-' -----------------------------------------------------------------------------------
-' Graphic_Start X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+' ---------------------------------------
+' Graphic Commands
+' ---------------------------------------
+' Graphic_Start X1&, Y1&, X2&, Y2&, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+' Graphic_Color FGColor&, BGColor&                      (define current FG and BG RGB colors)
+' Graphic_Line X1&, Y1&, X2&, Y2&                       (draw Line from X1&,Y1& to X2&,Y2& using current color)
+' Graphic_LineTo X2&, Y2&                               (draw line from end of last line or point to X2&,Y2& using current color)
 
-' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
-' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
-' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
-' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
-
-' Graphic_End                                           (end draw cycle and draw image using current draw stack)
-' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
-' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Start)
 
 FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' =====================================================================
@@ -248,8 +242,8 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' set default text for Jog rate
      GUISetJogText "10"
      ' define some of the extra buttons
-     GUISetButton 1, "Show Graphic"
-     GUISetButton 2, "Draw Something"
+     GUISetButton 1, "Button 1"
+     GUISetButton 2, "Button 2"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
      DO
@@ -278,7 +272,6 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          CASE %EZK_HOME
                               GUIPrintStatus "Home - " + GUIEventName(CMsg&) + "   ID =" + STR$(Control_ID&)
                          CASE ELSE
-                              GUIPrintStatus "AnyKey - " + GUIEventName(CMsg&) + "   ID =" + STR$(Control_ID&)
                     END SELECT
                END IF
                ' ------------------------------------------
@@ -453,11 +446,11 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                     ' -------------------------------------
                     CASE 1    ' Extra Button 1
                          IF CMsg&=%EZ_Click THEN
-                              Graphic_Show   ' Show Graphic Window above MAIN form
+                              GUIMsgBox "You clicked Extra Button 1"
                          END IF
                     CASE 2    ' Extra Button 2
                          IF CMsg&=%EZ_Click THEN
-                              GOSUB TestDraw
+                              GUIWarningBox "Warning! You clicked Extra Button 2"
                          END IF
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
@@ -483,37 +476,4 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
           END IF
      LOOP
      FUNCTION=0
-     EXIT FUNCTION
-
-TestDraw:
-' Graphic_Start X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
-
-' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
-' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
-' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
-' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
-
-' Graphic_End                                           (end draw cycle and draw image using current draw stack)
-' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
-' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Start)
-
-LOCAL DG&, RX!, RY!, AspectY!, ActualY!
-AspectY! = Graphic_GetAspectRatio
-ActualY! = 6! * AspectY!
-Graphic_Start -6!,-ActualY!, 6!, ActualY!, 1000    ' define image as 12 inches wide, height based on aspect ratio
-FOR DG& = 0 TO 360 STEP 5
-     Graphic_CalcPoint 0!,0!, ActualY!-.05!, DG&, RX!, RY!
-     IF DG& <> 0 THEN
-          Graphic_Color 22,0       ' set colors to light yellow on black
-          Graphic_LineTo RX!, RY!  ' add outside of circle line
-     END IF
-     Graphic_Color 17, 0   ' set colors to light blue on black
-     Graphic_Line 0!,0!, RX!, RY!  ' draw radius line
-NEXT DG&
-Graphic_End
-Graphic_Show
-RETURN
-
-
 END FUNCTION
