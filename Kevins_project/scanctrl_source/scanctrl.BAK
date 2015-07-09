@@ -8,6 +8,8 @@
 #RESOURCE ".\rcdata\scanctrl.pbr"
 
 
+%RealBackEnd   =    1
+
 ' -------------------------------------------------------------------------------------
 ' Important routines for apps back end
 ' -------------------------------------------------------------------------------------
@@ -17,6 +19,7 @@ DECLARE FUNCTION Main_Initialize(BYVAL VerNum&) AS LONG
 DECLARE SUB InitGraphicStack(BYVAL MaxTasks&)
 DECLARE SUB DrawDIBPictureNow()
 DECLARE SUB InitOtherGlobals()
+DECLARE SUB SetUserInput(BYVAL CID&, BYVAL CMsg&, BYVAL CVal&)
 ' *************************************************************************************
 '                               SPLASH Form
 ' *************************************************************************************
@@ -118,6 +121,7 @@ SUB EZ_Main(VerNum&)     ' (PROTECTED)
      EZ_AllowCommandEvents  0
      EZ_AllowMouseMoveEvents 1
      EZ_AllowCursorEvents 1
+     EZ_AllowKeyEvents 2
      EZ_DefFont 6, "Arial Narrow", 10, "BV"
      EZ_DefFont 7, "Arial Narrow", 12, "BV"
      EZ_DefFont 8, "Arial Narrow", 10, "L+V"
@@ -159,6 +163,43 @@ END SUB
 ' -------------------------------------------------------------------------------------
 
 SUB EZ_Events(FormName$, CID&, CMsg&, CVal&, Cancel&)     ' All calls must be forwarded for each form from here
+     LOCAL TempID&
+     SELECT CASE CMsg&
+          CASE %EZ_KeyDown TO %EZ_KeyPress
+               IF FormName$ = "MAIN" THEN
+                    SELECT CASE CID&
+                         CASE %MAIN_FILE1 TO %MAIN_FILE1+App_MAIN_FILE_Count&-1
+                              TempID& = 50+CID&-%MAIN_FILE1+1
+                         CASE %MAIN_SETUP1 TO %MAIN_SETUP1+App_MAIN_SETUP_Count&-1
+                              TempID& = 60+CID&-%MAIN_SETUP1+1
+                         CASE %MAIN_WINDOW1 TO %MAIN_WINDOW1+App_MAIN_WINDOW_Count&-1
+                              TempID& = 70+CID&-%MAIN_WINDOW1+1
+                         CASE  %MAIN_BUTTONEXTRA TO %MAIN_BUTTONEXTRA+17
+                              TempID& = CID&-%MAIN_BUTTONEXTRA+1       ' buttons 1 to 18
+                         CASE ELSE
+                              TempID& = CID&
+                    END SELECT
+                    SetUserInput TempID&, CMsg&, CVal&
+               END IF
+          CASE %EZ_SysKeyDown TO %EZ_SysKeyPress
+               IF FormName$ = "MAIN" THEN
+                    SELECT CASE CID&
+                         CASE %MAIN_FILE1 TO %MAIN_FILE1+App_MAIN_FILE_Count&-1
+                              TempID& = 50+CID&-%MAIN_FILE1+1
+                         CASE %MAIN_SETUP1 TO %MAIN_SETUP1+App_MAIN_SETUP_Count&-1
+                              TempID& = 60+CID&-%MAIN_SETUP1+1
+                         CASE %MAIN_WINDOW1 TO %MAIN_WINDOW1+App_MAIN_WINDOW_Count&-1
+                              TempID& = 70+CID&-%MAIN_WINDOW1+1
+                         CASE  %MAIN_BUTTONEXTRA TO %MAIN_BUTTONEXTRA+17
+                              TempID& = CID&-%MAIN_BUTTONEXTRA+1       ' buttons 1 to 18
+                         CASE ELSE
+                              TempID& = CID&
+                    END SELECT
+                    SetUserInput TempID&, CMsg&, CVal&
+               END IF
+          CASE ELSE
+     END SELECT
+
      SELECT CASE FormName$
           CASE "SPLASH"
                EZ_SPLASH_ParseEvents CID&, CMsg&, CVal&, Cancel&
@@ -805,6 +846,40 @@ SUB GUIGetUserInput(CID&, CMsg&, CVal&)
      EZ_EndCSect 1
 END SUB
 
+FUNCTION GUICheckKey(BYVAL CMsg&, BYVAL CVal&) AS LONG
+     LOCAL RV&
+     RV& = 0
+     SELECT CASE CMsg&
+          CASE %EZ_KeyDown TO %EZ_KeyPress
+               RV& = CVal&
+          CASE %EZ_SysKeyDown TO %EZ_SysKeyPress
+               RV& = CVal&
+     END SELECT
+     FUNCTION = RV&
+END FUNCTION
+
+FUNCTION GUIEventName(BYVAL CMsg&) AS STRING
+     LOCAL RV$
+     RV$=""
+     SELECT CASE CMsg&
+          CASE %EZ_KeyDown
+               RV$ = "%EZ_KeyDown"
+          CASE %EZ_KeyUp
+               RV$ = "%EZ_KeyUp"
+          CASE %EZ_KeyPress
+               RV$ = "%EZ_KeyPress"
+          CASE %EZ_SysKeyDown
+               RV$ = "%EZ_SysKeyDown"
+          CASE %EZ_SysKeyUp
+               RV$ = "%EZ_SysKeyUp"
+          CASE %EZ_SysKeyPress
+               RV$ = "%EZ_SysKeyPress"
+          CASE ELSE
+     END SELECT
+     FUNCTION=RV$
+END FUNCTION
+
+
 GLOBAL App_MainHandle&
 GLOBAL App_StatusText$
 GLOBAL App_Text1$
@@ -834,7 +909,7 @@ END SUB
 SUB GUI_XPOS(BYVAL EnableFlag&)
      App_ControlID(-1) = EnableFlag&
      App_ControlID(0)  = 1
-     App_ControlID(1)  = %MAIN_TEXTXPOS
+     App_ControlID(1)  = %MAIN_BUTTONXPOS
      EZ_SendThreadEvent App_MainHandle&, %MAIN_FakeID, 22
 END SUB
 
@@ -1626,6 +1701,9 @@ SUB MAIN_MAINCANVAS_Events( MyID&, CMsg&, CVal&, Cancel&)
      END SELECT
 END SUB
 
-#INCLUDE "backend.inc"
-
+#IF %RealBackEnd
+     #INCLUDE "realbackend.inc"
+#ELSE
+     #INCLUDE "backend.inc"
+#ENDIF
 ' put all my code before backend include file so it is accessable to it.

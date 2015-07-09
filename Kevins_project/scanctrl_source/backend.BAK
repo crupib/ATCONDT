@@ -203,7 +203,8 @@ GLOBAL SCN AS ScanVars
 ' GUI_JOGCONT EnableFlag&                         (Enables or Disables JOGCONT Button)
 ' GUI_JOGSTEP EnableFlag&                         (Enables or Disables JOGSTEP Button)
 ' GUI_EXTRA BN&, EnableFlag&                      (Enables or Disables EXTRA Buttons, BN& is Button number 1 to 18)
-
+' KeyVal& = GUICheckKey(CMsg&, CVal&)             (Check to see if key event occurred)
+' EventName$ = GUIEventName(CMsg&)                (Return name of Event as a string. Used only for keyboard events right now)
 
 ' ---------------------------------------
 ' Graphic Commands
@@ -218,7 +219,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' =====================================================================
      IF IFlag&=0 THEN EXIT FUNCTION     ' only run this code once in thread
      ' =====================================================================
-     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED
+     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&
      STATIC ScanningFlag&, ScanCount&, ScanTime AS EXTENDED
      ' Initialize everything here before DO LOOP
      ScanningFlag& = 0 ' default not scanning
@@ -251,6 +252,29 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
           ' ----------------------------------------
           IF Control_ID& <> %GUINoInput THEN    ' make sure some input has occurred
           ' ----------------------------------------
+               ' ------------------------------------------
+               ' Test for Key Events
+               ' ------------------------------------------
+               KeyVal& = GUICheckKey(CMsg&, CVal&)
+               IF KeyVal& <> 0 THEN
+                    ' do something with keys
+                    ' KeyVal& has Key value in it (see EZGUI key constants in ezgui50.inc)
+                    ' CMsg& has EZGUI event (%EZ_KeyPress, %EZ_KeyDown, %EZ_KeyUp) or (%EZ_SysKeyPress, %EZ_SysKeyDown, %EZ_SysKeyUp)
+                    ' Control_ID& has ID of control which has focus and gets key event
+                    ' Remember that controls will still get the keys no matter what you do here
+                    SELECT CASE KeyVal&
+                         CASE %EZK_ENTER
+                              GUIPrintStatus "Enter - " + GUIEventName(CMsg&) + "ID =" + STR$(Control_ID&)
+                         CASE %EZK_ESC
+                              GUIPrintStatus "ESC - " + GUIEventName(CMsg&) + "ID =" + STR$(Control_ID&)
+                         CASE %EZK_END
+                              GUIPrintStatus "End - " + GUIEventName(CMsg&) + "ID =" + STR$(Control_ID&)
+                         CASE %EZK_HOME
+                              GUIPrintStatus "Home - " + GUIEventName(CMsg&) + "ID =" + STR$(Control_ID&)
+                         CASE ELSE
+                    END SELECT
+               END IF
+               ' ------------------------------------------
                SELECT CASE Control_ID&
                     ' -------------------------------------
                     ' Main Form events
@@ -442,6 +466,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                     TimeSpan = CurrentTime - ScanTime
                     IF TimeSpan >= 0.03125## THEN ' this allows timing of GUI output to 1/32 second intervals
                          ScanCount& = ScanCount& +1
+                         IF ScanCount& > 2000000000 THEN ScanCount& = 0
                          ScanTime = CurrentTime
                          GUIPrintStatus "Counting: "+STR$(ScanCount&)
                     END IF
