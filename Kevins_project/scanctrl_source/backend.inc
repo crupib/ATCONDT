@@ -278,7 +278,6 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          CASE %EZK_HOME
                               GUIPrintStatus "Home - " + GUIEventName(CMsg&) + "   ID =" + STR$(Control_ID&)
                          CASE ELSE
-                              GUIPrintStatus "AnyKey - " + GUIEventName(CMsg&) + "   ID =" + STR$(Control_ID&)
                     END SELECT
                END IF
                ' ------------------------------------------
