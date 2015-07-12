@@ -47,9 +47,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
      WhichCanvas& = 1
-        'wlc
-     OPEN EZ_AppPath+"axscan.dat" FOR BINARY AS #1 BASE = 0
-     myoffset = 0
+
      ' disable scan stop button since no scanning yet
      DO
           ' ----------------------------------------
@@ -92,6 +90,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                     ' -------------------------------------
                     ' Main Canvas events
                     ' -------------------------------------
+
                     CASE %MAIN_MAINCANVAS
                     ' -------------------------------------
                     ' Jog Rotation control event
@@ -259,9 +258,15 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          END IF
                     CASE 3    ' Extra Button 3
                          WhichCanvas& = 1
+                             'wlc
+                         OPEN File_Name FOR BINARY AS #1 BASE = 0
+                         myoffset = 0
                          GOSUB TestAnimate
                     CASE 4    ' Extra Button 4
                          WhichCanvas& = 2
+                         'wlc
+                         OPEN File_Name FOR BINARY AS #1 BASE = 0
+                         myoffset = 0
                          GOSUB TestAnimate
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
@@ -460,7 +465,7 @@ WHILE ISFALSE EOF(1)
         myoffset = myoffset + 8
         Graphic_Color 4, 8
         'GRAPHIC PAINT (tempy1, tempx1), %RGB_ORANGE, clr1&
-        graphic_paint tempy1,tempx1
+        'graphic_paint tempy1,tempx1
 
         Graphic_Color ForeClr&, BoxColor&
 

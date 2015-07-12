@@ -8,9 +8,32 @@
 #RESOURCE ".\rcdata\scanctrl.pbr"
 
 ' -------------------------------------------------------------------------------------
-%RealBackEnd   =    0         ' set this to 1 when using the real backend include file
+%RealBackEnd   =    1         ' set this to 1 when using the real backend include file
 ' -------------------------------------------------------------------------------------
-
+DECLARE SUB SETUPFORM_XSTART_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XEND_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YSTART_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YEND_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XINDEX_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YINDEX_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XSPEED_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YSPEED_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XPOS_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YPOS_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XCTIN_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YCTIN_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XPLUSMIN_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YPLUSMIN_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_INDEX_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_IDXHL_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_XONOFF_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_YONOFF_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_AUTOHD_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_DUALRAS_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_OVERLAP_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_APOS_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_ACTIN_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SETUPFORM_CALBTN_Events(MyID&, CMsg&, CVal&, Cancel&)
 ' -------------------------------------------------------------------------------------
 DECLARE FUNCTION Main_Initialize(BYVAL VerNum&) AS LONG
 DECLARE SUB InitGraphicStack(BYVAL MaxTasks&)
@@ -123,10 +146,58 @@ GLOBAL App_MAIN_WINDOW_Count&
 %MAIN_FakeID             = 499
 
 '
+%SETUPFORM_XSTART             = 10000
+%SETUPFORM_LABELXSTART        = 10005
+%SETUPFORM_LABELXEND          = 10010
+%SETUPFORM_LABELYSTART        = 10015
+%SETUPFORM_LABELYEND          = 10020
+%SETUPFORM_LABELXINDEX        = 10025
+%SETUPFORM_LABELYINDEX        = 10030
+%SETUPFORM_LABELXSPEED        = 10035
+%SETUPFORM_LABELYSPEED        = 10040
+%SETUPFORM_LABELXPOS          = 10045
+%SETUPFORM_LABELYPOS          = 10050
+%SETUPFORM_LABELXCTIN         = 10055
+%SETUPFORM_LABELYCTIN         = 10060
+%SETUPFORM_LABELXPLUSMIN      = 10065
+%SETUPFORM_LABELYPLUSMIN      = 10070
+%SETUPFORM_LABELIDXHL         = 10075
+%SETUPFORM_LABELXONOFF        = 10080
+%SETUPFORM_LABELYONOFF        = 10085
+%SETUPFORM_LABELAUTOHD        = 10090
+%SETUPFORM_LABELDUALRAS       = 10095
+%SETUPFORM_LABELOVERLAP       = 20000
+%SETUPFORM_LABELAPOS          = 20005
+%SETUPFORM_LABELACTIN         = 20010
+%SETUPFORM_XEND               = 20015
+%SETUPFORM_YSTART             = 20020
+%SETUPFORM_YEND               = 20025
+%SETUPFORM_XINDEX             = 20030
+%SETUPFORM_YINDEX             = 20035
+%SETUPFORM_XSPEED             = 20040
+%SETUPFORM_YSPEED             = 20045
+%SETUPFORM_XPOS               = 20050
+%SETUPFORM_YPOS               = 20055
+%SETUPFORM_XCTIN              = 20060
+%SETUPFORM_YCTIN              = 20065
+%SETUPFORM_XPLUSMIN           = 20070
+%SETUPFORM_YPLUSMIN           = 20075
+%SETUPFORM_INDEX              = 20080
+%SETUPFORM_IDXHL              = 20085
+%SETUPFORM_XONOFF             = 20090
+%SETUPFORM_YONOFF             = 20095
+%SETUPFORM_AUTOHD             = 30000
+%SETUPFORM_DUALRAS            = 30005
+%SETUPFORM_OVERLAP            = 30000
+%SETUPFORM_APOS               = 30015
+%SETUPFORM_ACTIN              = 30020
+%SETUPFORM_LABELINDEX         = 30025
+%SETUPFORM_CALBTN             = 30030
+%SETUPFORM_Thread1_ID            =40000
 ' --------------------
 #INCLUDE ".\includes\ezwmain50.inc"                          ' EZGUI Include file for WinMain
 ' --------------------
-
+GLOBAL File_Name AS STRING
 
 
 SUB EZ_Main(VerNum&)     ' (PROTECTED)
@@ -180,6 +251,8 @@ SUB EZ_DesignWindow(FormName$)     ' All calls must be forwarded for each form f
                EZ_SPLASH_Design
           CASE "INPUTBOX"
                EZ_INPUTBOX_Design
+          CASE "SETUPFORM"
+               EZ_SETUPFORM_Design
           CASE ELSE
      END SELECT
 END SUB
@@ -234,6 +307,8 @@ SUB EZ_Events(FormName$, CID&, CMsg&, CVal&, Cancel&)     ' All calls must be fo
                EZ_SPLASH_ParseEvents CID&, CMsg&, CVal&, Cancel&
           CASE "INPUTBOX"
                EZ_INPUTBOX_ParseEvents CID&, CMsg&, CVal&, Cancel&
+           CASE "SETUPFORM"
+               EZ_SETUPFORM_ParseEvents CID&, CMsg&, CVal&, Cancel&
           CASE ELSE
      END SELECT
 END SUB
@@ -303,7 +378,7 @@ SUB EZ_SPLASH_Design()
      LOCAL CText$
      EZ_Color 15, 15
      EZ_UseFont 9
-     EZ_Label %SPLASH_LABELAPPNAME, 12.25, 6.5, 40.5, 6, "Scanner App 1.0", "^CI"
+     EZ_Label %SPLASH_LABELAPPNAME, 12.25, 6.5, 40.5, 6, "Atco Scanner App 2015", "^CI"
      ' -----------------------------------------------
      EZ_Color 15, 15
      EZ_UseFont 7
@@ -455,7 +530,368 @@ SUB EZ_INPUTBOX_ParseEvents(CID&, CMsg&, CVal&, Cancel&)     ' (PROTECTED)
           CASE ELSE
      END SELECT
 END SUB
+' *************************************************************************************
+'<<BEGINFORM>> "SETUPFORM"
 
+
+' ======================================
+' [PROTECTED CODE]         Do NOT Edit !
+' ======================================
+
+SUB EZ_SETUPFORM_Display(BYVAL FParent$)     ' (PROTECTED)
+     EZ_Color -1, -1
+     EZ_AllowLoadingEvent 2
+     EZ_Form "SETUPFORM", FParent$, "MCU Settings", 0, 0, 106, 46, "CRZ"
+END SUB
+
+SUB EZ_SETUPFORM_Design()     ' (PROTECTED)
+     LOCAL CText$
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_SubClass 2
+     EZ_Text %SETUPFORM_XSTART, 17, 2, 15, 1, "", "EST"
+     EZ_SubClass 0
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXSTART, 2, 2, 12, 1, "X Start", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXEND, 2, 4, 12, 1, "X End", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYSTART, 2, 6, 12, 1, "Y Start", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYEND, 2, 8, 12, 1, "Y End", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXINDEX, 2, 10, 12, 1, "X Index", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYINDEX, 2, 12, 12, 1, "Y Index", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXSPEED, 2, 14, 12, 1, "X Speed", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYSPEED, 2, 16, 12, 1, "Y Speed", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXPOS, 34.375, 1.9375, 12, 1, "X POS", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYPOS, 34.375, 3.9375, 12, 1, "Y POS", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXCTIN, 34.375, 5.9375, 12, 1, "X CT/IN", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYCTIN, 34.375, 7.9375, 12, 1, "Y  CT/IN", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXPLUSMIN, 34.375, 9.9375, 12, 1, "X +/-", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYPLUSMIN, 34.375, 11.9375, 12, 1, "Y +/-", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELIDXHL, 34.375, 15.9375, 12, 1, "IDX H/L", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELXONOFF, 66.25, 2, 12, 1, "X ON/OFF", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELYONOFF, 66.25, 4, 12, 1, "Y ON/OFF", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELAUTOHD, 66.25, 6, 12, 1, "AUTO HD", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELDUALRAS, 66.25, 8, 12, 1, "DUALRAS", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELOVERLAP, 66.25, 10, 12, 1, "OVERLAP", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELAPOS, 66.25, 12, 12, 1, "A POS", "C"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELACTIN, 66.25, 14, 12, 1, "A CT/IN", "C"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XEND, 17, 4, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YSTART, 17, 6, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YEND, 17, 8, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XINDEX, 17, 9.875, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YINDEX, 17, 11.875, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XSPEED, 17, 13.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YSPEED, 17, 15.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XPOS, 48.375, 1.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YPOS, 48.375, 3.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XCTIN, 48.375, 5.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YCTIN, 48.375, 7.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XPLUSMIN, 48.375, 9.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YPLUSMIN, 48.375, 11.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_INDEX, 48.375, 14, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_IDXHL, 48.375, 15.9375, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_XONOFF, 80.25, 2, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_YONOFF, 80.25, 4, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_AUTOHD, 80.25, 6, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_DUALRAS, 80.25, 8, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_OVERLAP, 80.25, 10, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_APOS, 80.25, 12, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color-1,-1
+     EZ_UseFont 4
+     EZ_AllowLoadingEvent 2
+     EZ_UseAutoSize "VH"
+     EZ_Text %SETUPFORM_ACTIN, 80.25, 14, 15, 1, "", "EST"
+     ' -----------------------------------------------
+     EZ_Color 0, 11
+     EZ_UseFont 4
+     EZ_UseAutoSize "VH"
+     EZ_Label %SETUPFORM_LABELINDEX, 34.375, 13.9375, 12, 1, "INDEX", "C"
+     ' -----------------------------------------------
+     EZ_Color 12, 15
+     EZ_UseFont 4
+     EZ_ODButton %SETUPFORM_CALBTN, 2, 19, 25, 6, "Calibrate Encoders", "T"
+     EZ_SetRegion "SetupForm", %SETUPFORM_CALBTN,-2,0
+     ' -----------------------------------------------
+END SUB
+
+
+SUB EZ_SETUPFORM_ParseEvents(CID&, CMsg&, CVal&, Cancel&)     ' (PROTECTED)
+     SELECT CASE CID&
+          CASE %EZ_Window
+               SETUPFORM_Events CID&, CMsg&, CVal&, Cancel&
+               IF CMsg&=%EZ_Started OR CMsg&=%EZ_Close THEN
+                    SETUPFORM_Thread1Events "SETUPFORM", %SETUPFORM_Thread1_ID, CMsg&, CVal&, Cancel&
+               END IF
+          CASE %SETUPFORM_Thread1_ID
+               SETUPFORM_Thread1Events "SETUPFORM", CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XSTART
+               SETUPFORM_XSTART_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XEND
+               SETUPFORM_XEND_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YSTART
+               SETUPFORM_YSTART_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YEND
+               SETUPFORM_YEND_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XINDEX
+               SETUPFORM_XINDEX_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YINDEX
+               SETUPFORM_YINDEX_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XSPEED
+               SETUPFORM_XSPEED_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YSPEED
+               SETUPFORM_YSPEED_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XPOS
+               SETUPFORM_XPOS_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YPOS
+               SETUPFORM_YPOS_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XCTIN
+               SETUPFORM_XCTIN_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YCTIN
+               SETUPFORM_YCTIN_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XPLUSMIN
+               SETUPFORM_XPLUSMIN_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YPLUSMIN
+               SETUPFORM_YPLUSMIN_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_INDEX
+               SETUPFORM_INDEX_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_IDXHL
+               SETUPFORM_IDXHL_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_XONOFF
+               SETUPFORM_XONOFF_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_YONOFF
+               SETUPFORM_YONOFF_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_AUTOHD
+               SETUPFORM_AUTOHD_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_DUALRAS
+               SETUPFORM_DUALRAS_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_OVERLAP
+               SETUPFORM_OVERLAP_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_APOS
+               SETUPFORM_APOS_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_ACTIN
+               SETUPFORM_ACTIN_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %SETUPFORM_CALBTN
+               SETUPFORM_CALBTN_Events CID&, CMsg&, CVal&, Cancel&
+               IF CMsg&=%EZ_OwnerDraw THEN
+                    EZ_Draw3DButtonRR "SetupForm", %SETUPFORM_CALBTN, CVal&, 15, 12,  4
+               END IF
+          CASE ELSE
+               SETUPFORM_Events CID&, CMsg&, CVal&, Cancel&
+     END SELECT
+END SUB
+
+' ======================================
+' [USER ACCESSABLE CODE]  You may Edit !
+' ======================================
+
+SUB SETUPFORM_Events(CID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CID&
+          CASE %EZ_Window
+               SELECT CASE CMsg&
+                    CASE %EZ_Loading
+                    CASE %EZ_Loaded
+                    CASE %EZ_Started
+                    CASE %EZ_Close
+                    CASE ELSE
+               END SELECT
+          CASE ELSE
+     END SELECT
+END SUB
+' *************************************************************************************
 ' *************************************************************************************
 '                              MAIN Form code
 ' *************************************************************************************
@@ -491,9 +927,9 @@ END FUNCTION
 SUB EZ_MAIN_Design()
      ' separate each menu item with the | character
      ' FILE menu Items
-     DATA "File Item 1|File Item 2|File Item 3|File Item 4|File Item 5|File Item 6"
+     DATA "File Open|File Save|File Item 3|File Item 4|File Item 5|File Item 6"
      ' SETUP menu items
-     DATA "SETUP Item 1|SETUP Item 2|SETUP Item 3|SETUP Item 4|SETUP Item 5|SETUP Item 6"
+     DATA "SETUP Calibration|SETUP Item 2|SETUP Item 3|SETUP Item 4|SETUP Item 5|SETUP Item 6"
      ' WINDOW menu items
      DATA "WINDOW Item 1|WINDOW Item 2|WINDOW Item 3|WINDOW Item 4|WINDOW Item 5|WINDOW Item 6"
      ' extra button in area to left
@@ -1385,7 +1821,11 @@ SUB EZ_MAIN_ParseEvents(CID&, CMsg&, CVal&, Cancel&)
                MenuN&=50+CID&-%MAIN_FILE1+1
                SELECT CASE CMsg&
                     CASE %EZ_Click
-                         SetUserInput MenuN&, CMsg&, CVal&
+                        LOCAL Filter$
+                        Filter$ = "Setup Files|*.dat|Data Files|*.dat;*.dta|"
+
+                        SetUserInput MenuN&, CMsg&, CVal&
+                        File_Name = EZ_OpenFile("MAIN", "ATCO Open File", "", Filter$, "SPI")
                END SELECT
           CASE %MAIN_EXITAPP
                SELECT CASE CMsg&
@@ -1397,6 +1837,7 @@ SUB EZ_MAIN_ParseEvents(CID&, CMsg&, CVal&, Cancel&)
                MenuN&=60+CID&-%MAIN_SETUP1+1
                SELECT CASE CMsg&
                     CASE %EZ_Click
+                         EZ_SETUPFORM_Display "MAIN"
                          SetUserInput MenuN&, CMsg&, CVal&
                END SELECT
           CASE %MAIN_WINDOW1 TO %MAIN_WINDOW1+App_MAIN_WINDOW_Count&-1
@@ -1408,7 +1849,7 @@ SUB EZ_MAIN_ParseEvents(CID&, CMsg&, CVal&, Cancel&)
           CASE %MAIN_ABOUTBOX
                SELECT CASE CMsg&
                     CASE %EZ_Click
-                         AppMsgBox "Scanner App 1.0"
+                         AppMsgBox "Atco Scanner App 2015"
                END SELECT
           ' -------------
           ' Control events
@@ -2171,7 +2612,197 @@ SUB GRAPHIC_FRONTCANVAS_Events( MyID&, CMsg&, CVal&, Cancel&)
           CASE ELSE
      END SELECT
 END SUB
+SUB SETUPFORM_Thread1Events(BYVAL FormName$, BYVAL CID&, BYVAL CMsg&, CVal&, Cancel&)
+     LOCAL STM&
+     SELECT CASE CMsg&
+          CASE %EZ_ThreadCode     ' Non-GUI Thread Code
+               ' Cancel&=0      ' prevents %EZ_Thread event
+          CASE %EZ_Thread         ' GUI Thread Code
+          CASE %EZ_Started        ' Start Thread !
+               STM&=10             ' millisecond delay
+               EZ_StartThread FormName$, CID&, STM&
+          CASE %EZ_Close          ' Terminate Thread when form closes !
+               EZ_CloseThread FormName$, CID&
+          CASE ELSE
+     END SELECT
+END SUB
+SUB SETUPFORM_XSTART_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE %EZ_KeyDown
+          CASE %EZ_LButtonDown
+          CASE %EZ_Loaded
+          CASE ELSE
+     END SELECT
+END SUB
 
+SUB SETUPFORM_XEND_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE %EZ_NoFocus
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YSTART_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YEND_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_XINDEX_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YINDEX_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_XSPEED_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YSPEED_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_XPOS_Events( MyID&, CMsg&, CVal&, Cancel&)
+
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE %EZ_KEYDOWN
+              IF CVal&=27 THEN
+                  guimsgbox "Hello"
+
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YPOS_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_XCTIN_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YCTIN_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_XPLUSMIN_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YPLUSMIN_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_INDEX_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_IDXHL_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_XONOFF_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_YONOFF_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_AUTOHD_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_DUALRAS_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE %EZ_Loaded
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_OVERLAP_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_APOS_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_ACTIN_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Change
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB SETUPFORM_CALBTN_Events( MyID&, CMsg&, CVal&, Cancel&)
+     SELECT CASE CMsg&
+          CASE %EZ_Click
+          CASE ELSE
+     END SELECT
+END SUB
 
 #IF %RealBackEnd
      #INCLUDE "realbackend.inc"

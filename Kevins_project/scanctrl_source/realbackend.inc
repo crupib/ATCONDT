@@ -47,9 +47,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
      WhichCanvas& = 1
-        'wlc
-     OPEN EZ_AppPath+"axscan.dat" FOR BINARY AS #1 BASE = 0
-     myoffset = 0
+
      ' disable scan stop button since no scanning yet
      DO
           ' ----------------------------------------
@@ -92,6 +90,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                     ' -------------------------------------
                     ' Main Canvas events
                     ' -------------------------------------
+
                     CASE %MAIN_MAINCANVAS
                     ' -------------------------------------
                     ' Jog Rotation control event
@@ -259,10 +258,24 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          END IF
                     CASE 3    ' Extra Button 3
                          WhichCanvas& = 1
-                         GOSUB TestAnimate
+                        'wlc
+                         IF File_Name = "" THEN
+                             guimsgbox "Need to load dat file"
+                         ELSE
+                            OPEN File_Name FOR BINARY AS #1 BASE = 0
+                            myoffset = 0
+                            GOSUB TestAnimate
+                         END IF
                     CASE 4    ' Extra Button 4
                          WhichCanvas& = 2
-                         GOSUB TestAnimate
+                         'wlc
+                         IF File_Name = "" THEN
+                             guimsgbox "Need to load dat file"
+                         ELSE
+                            OPEN File_Name FOR BINARY AS #1 BASE = 0
+                            myoffset = 0
+                            GOSUB TestAnimate
+                         END IF
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
                          GUIPrintStatus "Control ID: "+STR$(Control_ID&)+"  Control Message: "+STR$(CMsg&)+"  Value: "+STR$(CVal&)
