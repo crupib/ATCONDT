@@ -1,0 +1,56 @@
+1. Create a bitmap window
+2. Scale the bitmap window in reals, world coordinates
+3. Draw some shapes and lines in it, preferably include some circles to test proper aspect ratio.
+4. Set aside that bitmap, that is, don't draw anymore in it.
+5. Create another visible, normal, windows graphic screen.
+6. Create some code within a DO LOOP, something like this:
+    Do
+             Copy STATIC Bitmap to visible screen
+             Generate a random X,Y coordinate
+             Draw a rectangular box and fill (paint) at that coordinate
+             Draw a couple of lines through the box, maybe @ +/- 90 degrees if not too difficult
+             Draw a couple of other shapes/fill/lines 
+             Refresh and display the newly completed screen
+             Sleep(100)  (so I can see and absorb the wonderful graphics you just created!)
+    
+   Loop
+
+
+
+
+SCRN& = 1800 : xSCRN& = 1000
+
+PixPerInch! = 0.04! '0.035! '0.05! '0.010! '.040! ' graphic window size
+
+yScrn1! = -(ySCRN& * .400!* PixPerInch!) : yScrn2! = ySCRN& * .400!* PixPerInch!
+
+xScrn1! = -(xSCRN& * .400!* PixPerInch!) : xScrn2! = (xSCRN& * .400!* PixPerInch!)
+
+PlotClr& = %WHITE
+BackClr& = %BLACK
+ForeClr& = PlotClr&
+
+'----------------------------------------------------------------------------------------------------
+
+'assigned even numbers for standard windows, direct display
+GRAPHIC WINDOW "NOZZLE 'Top View'", 10, 10, ySCRN&, xSCRN& TO hWin(0) 'Create a graphic window and assign it a handle
+GRAPHIC ATTACH hWin(0), 0& 'Select standard window
+GRAPHIC COLOR ForeClr&, BackClr& 'Set foreground and background color
+GRAPHIC CLEAR 'Clear selected window with background color
+GRAPHIC SCALE(yScrn1!,xScrn1!)-(yScrn2!,xScrn2!)
+
+
+'assigned odd numbers for bitmaps or special use windows, used to store static images for copying to standard window
+GRAPHIC BITMAP NEW ySCRN&, xSCRN& TO hWin(1) 'bitmap window for ellipse
+GRAPHIC ATTACH hWin(1), 0& 'Select bitmap window #1
+GRAPHIC COLOR ForeClr&, BackClr& 'Set foreground and background color
+GRAPHIC CLEAR 'Clear selected window with background color
+GRAPHIC SCALE(yScrn1!,xScrn1!)-(yScrn2!,xScrn2!)
+
+
+'assigned even numbers for standard windows, direct display
+GRAPHIC WINDOW "NOZZLE 'End View'", 10, 10, ySCRN&, xSCRN& TO hWin(2) 'Create a graphic window and assign it a handle
+GRAPHIC ATTACH hWin(2), 0& 'Select standard window
+GRAPHIC COLOR ForeClr&, BackClr& 'Set foreground and background color
+GRAPHIC CLEAR 'Clear selected window with background color
+GRAPHIC SCALE(yScrn1!,xScrn1!)-(yScrn2!,xScrn2!)

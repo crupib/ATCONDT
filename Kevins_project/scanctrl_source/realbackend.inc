@@ -3,224 +3,22 @@ MACRO CONST = MACRO
 CONST ENABLE =  1
 CONST DISABLE = 0
 
-TYPE ScanVars
-
-    YCtr        AS DOUBLE      'YCts/inch
-    XCtr        AS DOUBLE      'XCts/inch
-    ZCtr        AS DOUBLE      'ZCts/Degree
-    ACtr        AS DOUBLE      'Aux Enc Cts/inch
-
-    YCal        AS DOUBLE      'Y Cal Inch distance
-    XCal        AS DOUBLE      'X Cal Inch distance
-    ZCal        AS DOUBLE      'Z Cal Degree distance
-    ACal        AS DOUBLE      'Aux Cal Inch distance
-
-    XOffset     AS DOUBLE      'X inch pos when counter zeroed
-    YOffset     AS DOUBLE      'Y inch pos when counter zeroed
-    ZOffset     AS DOUBLE      'Z degree pos when counter zeroed
-    AOffset     AS DOUBLE      'A Inch pos when counter zeroed
-
-    XPos        AS DOUBLE      'current X inch position
-    YPos        AS DOUBLE      'current Y inch position
-    ZPos        AS DOUBLE      'current Z inch position
-    APos        AS DOUBLE      'current A inch position
-
-    XPlus       AS INTEGER      'X scan +/-
-    YPlus       AS INTEGER      'Y scan +/-
-    ZPlus       AS INTEGER      'Z scan +/-
-
-    XDataStart  AS LONG         'x array position for scan start
-    YDataStart  AS LONG         'y array position for scan start
-    ZDataStart  AS LONG         'Z array position for scan start
-
-    XDataEnd    AS LONG         'x array position for scan end
-    YDataEnd    AS LONG         'y array position for scan end
-    ZDataEnd    AS LONG         'z array position for scan end
-
-    XIndex      AS DOUBLE      'x inch index
-    YIndex      AS DOUBLE      'y inch index
-    ZIndex      AS DOUBLE      'z inch index
-
-    XIndexCts   AS LONG         'x actual value (+/-) counts per index
-    YIndexCts   AS LONG         'y actual value (+/-) counts per index
-    ZIndexCts   AS LONG         'z actual value (+/-) counts per index
-
-    IndexDir    AS INTEGER      'Index towards High or Low: RN IndexLow
-
-    XCts        AS LONG         'x absolute value scan start counts
-    YCts        AS LONG         'y absolute value scan start counts
-    ZCts        AS LONG         'z absolute value scan start counts
-    ACts        AS LONG         'a absolute value scan start counts
-
-    XStartCts   AS LONG         'x actual value (+/-) scan start counts
-    YStartCts   AS LONG         'y actual value (+/-) scan start counts
-    ZStartCts   AS LONG         'z actual value (+/-) scan start counts
-
-    XEndCts     AS LONG         'x actual value (+/-) scan end counts
-    YEndCts     AS LONG         'y actual value (+/-) scan end counts
-    ZEndCts     AS LONG         'z actual value (+/-) scan end counts
-
-    XLow        AS DOUBLE      'x scan start inch position
-    YLow        AS DOUBLE      'y scan start inch position
-    ZLow        AS DOUBLE      'z scan start inch position
-
-    XHigh       AS DOUBLE      'x scan end inch position
-    YHigh       AS DOUBLE      'y scan end inch position
-    ZHigh       AS DOUBLE      'z scan end inch position
-
-    OverLap     AS DOUBLE      'added si scan overlap
-
-    XSpeed      AS DOUBLE      'x scan speed in inches
-    YSpeed      AS DOUBLE      'y scan speed in inches
-    ZSpeed      AS DOUBLE      'z scan speed in inches
-
-    XEnable     AS INTEGER      'flag true/false X axis on
-    YEnable     AS INTEGER      'flag true/false Y axis on
-    ZEnable     AS INTEGER      'flag true/false Z axis on
-
-    XSpdDir     AS INTEGER      'flag X speed cntrl direction
-    IndexY      AS INTEGER      'flag true/false index on X or Y, circ or ax scan
-    StopChk     AS INTEGER      'flag true/false autoOff on/off
-    DualRas     AS INTEGER        'flag true/false double raster each index
-    AutoHold    AS INTEGER      'flag true/false Auto Hold
-    IndexCt     AS INTEGER      'index loop counter
-    IndexInc    AS INTEGER      'index loop incrementer
-    ScanFlag    AS INTEGER      '
-    Index       AS INTEGER      'scan direction
-    NextFlag    AS INTEGER      'added for si auto scan increment
-
-    YCtrStr     AS STRING * 10
-    XCtrStr     AS STRING * 10
-    ZCtrStr     AS STRING * 10
-    ACtrStr     AS STRING * 10
-
-    YCalStr     AS STRING * 10  'Y Cal Inch distance
-    XCalStr     AS STRING * 10  'X Cal Inch distance
-    ZCalStr     AS STRING * 10  'Z Cal Inch distance
-    ACalStr     AS STRING * 10  'A Cal Inch distance
-
-    XPosStr     AS STRING * 10
-    YPosStr     AS STRING * 10
-    ZPosStr     AS STRING * 10
-    APosStr     AS STRING * 10
-
-    XPlusSTR    AS STRING * 10
-    YPlusSTR    AS STRING * 10
-    ZPlusSTR    AS STRING * 10
-
-    XIndexSTR   AS STRING * 10
-    YIndexSTR   AS STRING * 10
-    ZIndexSTR   AS STRING * 10
-
-    IndexLowStr AS STRING * 10
-
-    XLowStr     AS STRING * 10
-    YLowStr     AS STRING * 10
-    ZLowStr     AS STRING * 10
-
-    XHighStr    AS STRING * 10
-    YHighStr    AS STRING * 10
-    ZHighStr    AS STRING * 10
-
-    OverLapStr  AS STRING * 10
-
-    XSpeedSTR   AS STRING * 10
-    YSpeedSTR   AS STRING * 10
-    ZSpeedSTR   AS STRING * 10
-
-    XEnableSTR  AS STRING * 10
-    YEnableSTR  AS STRING * 10
-    ZEnableSTR  AS STRING * 10
-
-    XSpdDirSTR  AS STRING * 10
-
-    IndexYSTR   AS STRING * 10
-
-    StopChkSTR  AS STRING * 10
-
-    DualRasSTR  AS STRING * 10
-
-    NextFlagSTR AS STRING * 10
-
-    AutoHoldSTR AS STRING * 10
-
-END TYPE
-
-GLOBAL SCN AS ScanVars
-
-' Extra Buttons have IDs 1 to 18
-' File menu has IDs from 50 to 56
-' Setup menu has IDs from 60 to 66
-' Window menu has ID's from 70 to 76
-' ------------------------------
-' GUI Commands are listed below
-' ------------------------------
-' GUIGetUserInput CID&, CMsg&, CVal&              (returns three values. CID& is control ID, CMsg& is EZGUI event constant, CVal& is a parameter for the event)
-' GUISetClose                                     (sets a flag telling GUI it is allowed to close the app)
-' GUIPrintStatus SText$                           (sets Status bar text)
-' GUISetXMotor State&                             (sets X Motor ON/OFF button state. 1 = ON, 0 = OFF)
-' GUISetYMotor State&                             (sets Y Motor ON/OFF button state. 1 = ON, 0 = OFF)
-' GUISetRMotor State&                             (sets R Motor ON/OFF button state. 1 = ON, 0 = OFF)
-' GUIMsgBox T$                                    (display a messagebox, T$ is text to display)
-' GUIWarningBox T$                                (display warning messagebox, T$ is text to display)
-' RV& = GUIQuestionBox(T$, BProp$)                (display a question box, T$ is text to display, BProp$ is property string as follows)
-'                                                 ( "OKC" = OK/Cancel, "RC" = Retry/Cancel, "YN" = Yes/No, "YNC" = Yes/No/Cancel, "ARI" = Abort/Retry/Ignore)
-' GUISetPolarCartesian PState&                    (set Polar/Cartesion state. 1 = Polar, 0 = Cartesian)
-' GUISetContinuousStep PState&                    (set Continuous/Step state. 1 = Continuous,  0 = Step)
-' RV$ = GUIShowInputBox(Prompt$)
-' GUISetButton ButtonNumber&, ButtonText$         (set and show extra buttons. 0 = Extra Scan Button, 1 to 18 = button array buttons)
-' GUISetXText T$                                  (set X Position Textbox)
-' GUISetYText T$                                  (set Y Position Textbox)
-' GUISetRText T$                                  (set R Position Textbox)
-' GUISetXPos XPos#                                (set X Position passing a Double value)
-' GUISetYPos YPos#                                (set Y Position passing a Double value)
-' GUISetRPos RPos#                                (set R Position passing a Double value)
-' GUISetTrackBar MinPos&, MaxPos&, CurrentPos&    (set Trackbar min,max and position)
-' GUISetJogText T$                                (set Jog rate text)
-' T$ = GUIDoubleToStr(V#)                         (convert a Double value to a string)
-' --------------------------- Enable/Disable controls --------------------------------
-' GUI_XPOS EnableFlag&                            (Enables or Disables XPOS Button)
-' GUI_XONOFF EnableFlag&                          (Enables or Disables XONOFF Button)
-' GUI_YPOS EnableFlag&                            (Enables or Disables YPOS Button)
-' GUI_YONOFF EnableFlag&                          (Enables or Disables YONOFF Button)
-' GUI_RPOS EnableFlag&                            (Enables or Disables RPOS Button)
-' GUI_RONOFF EnableFlag&                          (Enables or Disables RONOFF Button)
-' GUI_POLAR EnableFlag&                           (Enables or Disables POLAR Button)
-' GUI_CARTESIAN EnableFlag                        (Enables or Disables CARTESIAN Button)
-' GUI_ALLPOS EnableFlag&                          (Enables or Disables ALLPOS Button)
-' GUI_ALLOFF EnableFlag&                          (Enables or Disables ALLOFF Button)
-' GUI_ALLON EnableFlag&                           (Enables or Disables ALLON Button)
-' GUI_GOSCAN EnableFlag&                          (Enables or Disables GOSCAN Button)
-' GUI_EXTRASCAN EnableFlag&                       (Enables or Disables EXTRASCAN Button)
-' GUI_STOPSCAN EnableFlag&                        (Enables or Disables STOPSCAN Button)
-' GUI_JOGYPLUS EnableFlag&                        (Enables or Disables JOGYPLUS Button)
-' GUI_JOGXMINUS EnableFlag&                       (Enables or Disables JOGXMINUS Button)
-' GUI_JOGXPLUS EnableFlag&                        (Enables or Disables JOGXPLUS Button)
-' GUI_JOGYMINUS EnableFlag&                       (Enables or Disables JOGYMINUS Button)
-' GUI_JOGRPLUS EnableFlag&                        (Enables or Disables JOGRPLUS Button)
-' GUI_JOGRMINUS EnableFlag&                       (Enables or Disables JOGRMINUS Button)
-' GUI_TRACKBAR EnableFlag&                        (Enables or Disables JOG Rate TRACKBAR)
-' GUI_JOGCONT EnableFlag&                         (Enables or Disables JOGCONT Button)
-' GUI_JOGSTEP EnableFlag&                         (Enables or Disables JOGSTEP Button)
-' GUI_EXTRA BN&, EnableFlag&                      (Enables or Disables EXTRA Buttons, BN& is Button number 1 to 18)
-' KeyVal& = GUICheckKey(CMsg&, CVal&)             (Check to see if key event occurred)
-' EventName$ = GUIEventName(CMsg&)                (Return name of Event as a string. Used only for keyboard events right now)
-
-' ---------------------------------------
-' Graphic Commands
-' ---------------------------------------
-' Graphic_Start X1&, Y1&, X2&, Y2&, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
-' Graphic_Color FGColor&, BGColor&                      (define current FG and BG RGB colors)
-' Graphic_Line X1&, Y1&, X2&, Y2&                       (draw Line from X1&,Y1& to X2&,Y2& using current color)
-' Graphic_LineTo X2&, Y2&                               (draw line from end of last line or point to X2&,Y2& using current color)
-
-
 FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' =====================================================================
      IF IFlag&=0 THEN EXIT FUNCTION     ' only run this code once in thread
      ' =====================================================================
-     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&
+     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&, WhichCanvas&
      STATIC ScanningFlag&, ScanCount&, ScanTime AS EXTENDED
+
+     ' Variables for drawing code
+     LOCAL DG&, RX!, RY!, CircleDiam!
+     LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
+     LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
+      ' Atco Variables
+     LOCAL myoffset AS LONG
+     LOCAL tempx1, tempx2, tempy1, tempy2 AS DOUBLE
+     LOCAL tempSx1, tempSx2, tempSy1, tempSy2 AS SINGLE
+
      ' Initialize everything here before DO LOOP
      ScanningFlag& = 0 ' default not scanning
 
@@ -242,10 +40,17 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' set default text for Jog rate
      GUISetJogText "10"
      ' define some of the extra buttons
-     GUISetButton 1, "Button 1"
-     GUISetButton 2, "Button 2"
+     GUISetButton 1, "Show Graphic"
+     GUISetButton 2, "Draw Bitmap"
+     GUISetButton 3, "Animate Small"
+     GUISetButton 4, "Animate Big"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
+     WhichCanvas& = 1
+        'wlc
+     OPEN EZ_AppPath+"axscan.dat" FOR BINARY AS #1 BASE = 0
+     myoffset = 0
+     ' disable scan stop button since no scanning yet
      DO
           ' ----------------------------------------
           GUIGetUserInput Control_ID&, CMsg&, CVal&
@@ -446,12 +251,18 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                     ' -------------------------------------
                     CASE 1    ' Extra Button 1
                          IF CMsg&=%EZ_Click THEN
-                              GUIMsgBox "You clicked Extra Button 1"
+                              Graphic_Show   ' Show Graphic Window above MAIN form
                          END IF
                     CASE 2    ' Extra Button 2
                          IF CMsg&=%EZ_Click THEN
-                              GUIWarningBox "Warning! You clicked Extra Button 2"
+                              GOSUB TestDrawBitmap
                          END IF
+                    CASE 3    ' Extra Button 3
+                         WhichCanvas& = 1
+                         GOSUB TestAnimate
+                    CASE 4    ' Extra Button 4
+                         WhichCanvas& = 2
+                         GOSUB TestAnimate
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
                          GUIPrintStatus "Control ID: "+STR$(Control_ID&)+"  Control Message: "+STR$(CMsg&)+"  Value: "+STR$(CVal&)
@@ -476,4 +287,228 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
           END IF
      LOOP
      FUNCTION=0
+     EXIT FUNCTION
+
+
+
+TestDrawBitmap:
+yScrn& = 1200
+xScrn& = 800
+
+PixPerInch! = 0.04!
+yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
+xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
+
+
+PlotClr& = 15  ' white  DOS color index
+BackClr& = 0   ' black DOS color index
+ForeClr& = PlotClr&
+
+Graphic_Bitmap ySCRN&, xSCRN& ' call before drawing
+
+Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
+' Graphic Scale must come before all other commands, except Graphic_Bitmap
+
+' Draw into Buffer 2 and we will copy it later
+Graphic_SelectBuffer 2
+Graphic_Color ForeClr&, BackClr&
+Graphic_Clear
+CircleDiam! = xScrn2! * 0.95!
+FOR DG& = 0 TO 360 STEP 2
+     Graphic_CalcPoint 0!,0!, CircleDiam!, DG&, RX!, RY!
+     IF DG& <> 0 THEN
+          Graphic_Color ForeClr&,BackClr&       ' set colors to light yellow on black
+          Graphic_LineTo RX!, RY!  ' add outside of circle line
+     END IF
+     Graphic_Color ForeClr&, BackClr&   ' set colors to light blue on black
+     Graphic_Line 0!,0!, RX!, RY!  ' draw radius line
+NEXT DG&
+Graphic_Print yScrn1!, 0, "Hello There !"
+Graphic_Render
+RETURN
+
+
+
+TestAnimate:
+yScrn& = 1200
+xScrn& = 800
+
+PixPerInch! = 0.04!
+yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
+xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
+
+
+PlotClr& = 15  ' white  DOS color index
+BackClr& = 0   ' black DOS color index
+ForeClr& = PlotClr&
+LOCAL BoxColor&
+BoxColor& = 4  ' red
+
+' do not call Graphic_Bitmap since Graphic was already sized in previous routine
+
+LOCAL BX!, BY!, BW!
+BW! = xScrn2! / 8!
+BY! = 0! - (BW!/2)
+
+IF WhichCanvas& =  2 THEN
+     Graphic_Show
+END IF
+
+
+'' LOCAL CT&, T1 AS EXTENDED, T2 AS EXTENDED, T$
+'' CT&=0
+'' T1=EZ_GetPTime
+'FOR BX!=yScrn1! TO (yScrn2!-BW!) STEP (BW!/8)
+''     CT&=CT&+1
+'     Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
+'     Graphic_CopyBuffer 2,1   ' copy Buffer 2 to 1. 1 is front buffer and visible
+'     Graphic_SelectBuffer 1
+'     Graphic_Color ForeClr&, BoxColor&
+'     Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
+'     Graphic_Render
+'     Graphic_Copy WhichCanvas&
+'NEXT BX!
+'' T2=EZ_GetPTime
+'' T$=FORMAT$(CT&/(T2-T1), "000.00")+" fps"
+'' GUIMsgBox T$
+
+WHILE ISFALSE EOF(1)
+
+
+        Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
+        Graphic_CopyBuffer 2,1   ' copy Buffer 2 to 1. 1 is front buffer and visible
+        Graphic_SelectBuffer 1
+        Graphic_Color ForeClr&, BoxColor&
+
+  'draw transducer sides x4 (rectangle)
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 8
+       'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        graphic_line tempy1, tempx1, tempy2, tempx2
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 8
+'       'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        graphic_line tempy1, tempx1, tempy2, tempx2
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 8
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        graphic_line tempy1, tempx1, tempy2, tempx2
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 8
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        graphic_line tempy1, tempx1, tempy2, tempx2
+        'make sure all (4) corners of the rectangle are sealed before calling GRAPHIC PAINT, otherwise paint leaks out everywhere!!
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 8
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 8
+        Graphic_Color 4, 8
+        'GRAPHIC PAINT (tempy1, tempx1), %RGB_ORANGE, clr1&
+        'graphic_paint tempy1,tempx1
+
+        Graphic_Color ForeClr&, BoxColor&
+
+        GET  #1, myoffset,  tempSy1
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSx1
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSy2
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSx2
+        myoffset = myoffset + 4
+
+
+        'GRAPHIC LINE(tempSy1,tempSx1)-(tempSy2,tempSx2),clr1&  'RGB_WHITE 'LIGHTGOLDENRODYELLOW '%RGB_GHOSTWHITE 'draw line on HALO
+        graphic_line tempSy1, tempSx1, tempSy2, tempSx2
+
+        GET  #1, myoffset,  tempSy1
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSx1
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSy2
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSx2
+        myoffset = myoffset + 4
+
+        'GRAPHIC LINE(tempSy1,tempSx1)-(tempSy2,tempSx2),clr1&
+        graphic_line tempSy1, tempSx1, tempSy2, tempSx2
+
+        GET  #1, myoffset,  tempSy1
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSx1
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSy2
+        myoffset = myoffset + 4
+        GET  #1, myoffset,  tempSx2
+        myoffset = myoffset + 4
+'
+        'GRAPHIC ELLIPSE (tempSy1,tempSx1)-(tempSy2,tempSx2), %RGB_WHITE, -1 'orange, -1 '%WHITE, -1 'clr1&
+        Graphic_Ellipse tempSy1,tempSx1, tempSy2, tempSx2, 9
+        Graphic_Render
+        Graphic_Copy WhichCanvas&
+
+'        Graphic_Print yScrn1!, 0, "Hello There !"
+        EZ_Delay 0.0125!
+
+WEND
+CLOSE #1
+RETURN
+
+
 END FUNCTION

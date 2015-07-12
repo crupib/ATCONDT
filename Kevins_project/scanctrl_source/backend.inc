@@ -209,24 +209,39 @@ GLOBAL SCN AS ScanVars
 ' -----------------------------------------------------------------------------------
 ' Graphic Commands      Coordinates are in FULL INCHES using floating point values
 ' -----------------------------------------------------------------------------------
-' Graphic_Start X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+' Graphic_Scale X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle and scale window. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
 
 ' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
 ' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
 ' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
 ' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
 
-' Graphic_End                                           (end draw cycle and draw image using current draw stack)
+' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
 ' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
 ' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Start)
+' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Scale)
+' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
+' Graphic_Paint X1!, Y1!                                (Paint (fill) starting at X1!,Y1! until meets another color)
+' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&             (draw a Box from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if box is filled with background color)
+' Graphic_Ellipse X1!, Y1!, X2!, Y2!, FillFlag&         (draw a Ellipse from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if Ellipse is filled with background color)
+' Graphic_SelectBuffer BufferNumber&                    (select which image buffer to draw into either 1 or 2)
+' Graphic_CopyBuffer SrcBuffer&, DestBuffer&            (Copy one Bitmap Buffer to another. Buffers 1 and 2 available)
+' Graphic_Copy DestNumber&                              (Copy Bitmap Buffer 1 to another Canvas. DestNumber& =1 (main canvas), =2 (Graphic Canvas) call outside of draw cycle)
+' Graphic_Print X!, Y!, TextStr$                        (Print text string up to 255 characters at X!, Y! location)
 
 FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' =====================================================================
      IF IFlag&=0 THEN EXIT FUNCTION     ' only run this code once in thread
      ' =====================================================================
-     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&
+     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&, WhichCanvas&
      STATIC ScanningFlag&, ScanCount&, ScanTime AS EXTENDED
+
+     ' Variables for drawing code
+     LOCAL DG&, RX!, RY!, CircleDiam!
+     LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
+     LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
+
+
      ' Initialize everything here before DO LOOP
      ScanningFlag& = 0 ' default not scanning
 
@@ -249,9 +264,12 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      GUISetJogText "10"
      ' define some of the extra buttons
      GUISetButton 1, "Show Graphic"
-     GUISetButton 2, "Draw Something"
+     GUISetButton 2, "Draw Bitmap"
+     GUISetButton 3, "Animate Small"
+     GUISetButton 4, "Animate Big"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
+     WhichCanvas& = 1
      DO
           ' ----------------------------------------
           GUIGetUserInput Control_ID&, CMsg&, CVal&
@@ -456,8 +474,14 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          END IF
                     CASE 2    ' Extra Button 2
                          IF CMsg&=%EZ_Click THEN
-                              GOSUB TestDraw
+                              GOSUB TestDrawBitmap
                          END IF
+                    CASE 3    ' Extra Button 3
+                         WhichCanvas& = 1
+                         GOSUB TestAnimate
+                    CASE 4    ' Extra Button 4
+                         WhichCanvas& = 2
+                         GOSUB TestAnimate
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
                          GUIPrintStatus "Control ID: "+STR$(Control_ID&)+"  Control Message: "+STR$(CMsg&)+"  Value: "+STR$(CVal&)
@@ -484,34 +508,107 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      FUNCTION=0
      EXIT FUNCTION
 
-TestDraw:
-' Graphic_Start X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+
+' Graphic_Scale X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle and scale window. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
 
 ' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
 ' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
 ' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
 ' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
-
-' Graphic_End                                           (end draw cycle and draw image using current draw stack)
+' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
 ' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
 ' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Start)
+' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Scale)
+' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
+' Graphic_Paint X1!, Y1!                                (Paint (fill) starting at X1!,Y1! until meets another color)
+' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&             (draw a Box from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if box is filled with background color)
+' Graphic_Ellipse X1!, Y1!, X2!, Y2!, FillFlag&         (draw a Ellipse from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if Ellipse is filled with background color)
+' Graphic_SelectBuffer BufferNumber&                    (select which image buffer to draw into either 1 or 2)
+' Graphic_CopyBuffer SrcBuffer&, DestBuffer&            (Copy one Bitmap Buffer to another. Buffers 1 and 2 available)
+' Graphic_Copy DestNumber&                              (Copy Bitmap Buffer 1 to another Canvas. DestNumber& =1 (main canvas), =2 (Graphic Canvas) call outside of draw cycle)
+'            Graphic_Copy will be ignored if Graphic Back Canvas fits in form and is visible
+' Graphic_Print X!, Y!, TextStr$                        (Print text string up to 255 characters at X!, Y! location)
 
-LOCAL DG&, RX!, RY!, AspectY!, ActualY!
-AspectY! = Graphic_GetAspectRatio
-ActualY! = 6! * AspectY!
-Graphic_Start -6!,-ActualY!, 6!, ActualY!, 1000    ' define image as 12 inches wide, height based on aspect ratio
-FOR DG& = 0 TO 360 STEP 5
-     Graphic_CalcPoint 0!,0!, ActualY!-.05!, DG&, RX!, RY!
+TestDrawBitmap:
+yScrn& = 1800
+xScrn& = 1000
+
+PixPerInch! = 0.04!
+yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
+xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
+
+
+PlotClr& = 15  ' white  DOS color index
+BackClr& = 0   ' black DOS color index
+ForeClr& = PlotClr&
+
+Graphic_Bitmap ySCRN&, xSCRN& ' call before drawing
+
+Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
+' Graphic Scale must come before all other commands, except Graphic_Bitmap
+
+' Draw into Buffer 2 and we will copy it later
+Graphic_SelectBuffer 2
+Graphic_Color ForeClr&, BackClr&
+Graphic_Clear
+CircleDiam! = xScrn2! * 0.95!
+FOR DG& = 0 TO 360 STEP 2
+     Graphic_CalcPoint 0!,0!, CircleDiam!, DG&, RX!, RY!
      IF DG& <> 0 THEN
-          Graphic_Color 22,0       ' set colors to light yellow on black
+          Graphic_Color ForeClr&,BackClr&       ' set colors to light yellow on black
           Graphic_LineTo RX!, RY!  ' add outside of circle line
      END IF
-     Graphic_Color 17, 0   ' set colors to light blue on black
+     Graphic_Color ForeClr&, BackClr&   ' set colors to light blue on black
      Graphic_Line 0!,0!, RX!, RY!  ' draw radius line
 NEXT DG&
-Graphic_End
-Graphic_Show
+Graphic_Print yScrn1!, 0, "Hello There !"
+Graphic_Render
+RETURN
+
+
+
+TestAnimate:
+yScrn& = 1800
+xScrn& = 1000
+
+PixPerInch! = 0.04!
+yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
+xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
+
+
+PlotClr& = 15  ' white  DOS color index
+BackClr& = 0   ' black DOS color index
+ForeClr& = PlotClr&
+LOCAL BoxColor&
+BoxColor& = 4  ' red
+
+' do not call Graphic_Bitmap since Graphic was already sized in previous routine
+
+LOCAL BX!, BY!, BW!
+BW! = xScrn2! / 8!
+BY! = 0! - (BW!/2)
+
+IF WhichCanvas& =  2 THEN
+     Graphic_Show
+END IF
+
+
+' LOCAL CT&, T1 AS EXTENDED, T2 AS EXTENDED, T$
+' CT&=0
+' T1=EZ_GetPTime
+FOR BX!=yScrn1! TO (yScrn2!-BW!) STEP (BW!/8)
+'     CT&=CT&+1
+     Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
+     Graphic_CopyBuffer 2,1   ' copy Buffer 2 to 1. 1 is front buffer and visible
+     Graphic_SelectBuffer 1
+     Graphic_Color ForeClr&, BoxColor&
+     Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
+     Graphic_Render
+     Graphic_Copy WhichCanvas&
+NEXT BX!
+' T2=EZ_GetPTime
+' T$=FORMAT$(CT&/(T2-T1), "000.00")+" fps"
+' GUIMsgBox T$
 RETURN
 
 

@@ -209,19 +209,25 @@ GLOBAL SCN AS ScanVars
 ' -----------------------------------------------------------------------------------
 ' Graphic Commands      Coordinates are in FULL INCHES using floating point values
 ' -----------------------------------------------------------------------------------
-' Graphic_Start X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+' Graphic_Scale X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle and scale window. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
 
 ' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
 ' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
 ' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
 ' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
 
-' Graphic_End                                           (end draw cycle and draw image using current draw stack)
+' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
 ' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
 ' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Start)
+' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Scale)
+' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
 
 FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
+    LOCAL filename AS STRING
+    LOCAL filenumber AS INTEGER
+    LOCAL myoffset AS LONG
+    LOCAL tempstr AS STRING
+    LOCAL tempx1, tempx2, tempy1, tempy2 AS DOUBLE
      ' =====================================================================
      IF IFlag&=0 THEN EXIT FUNCTION     ' only run this code once in thread
      ' =====================================================================
@@ -249,9 +255,12 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      GUISetJogText "10"
      ' define some of the extra buttons
      GUISetButton 1, "Show Graphic"
-     GUISetButton 2, "Draw Something"
+     GUISetButton 2, "Draw Bitmap"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
+      'wlc
+      OPEN EZ_AppPath+"axscan.dat" FOR BINARY AS #1 BASE = 0
+     myoffset = 0
      DO
           ' ----------------------------------------
           GUIGetUserInput Control_ID&, CMsg&, CVal&
@@ -278,7 +287,6 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          CASE %EZK_HOME
                               GUIPrintStatus "Home - " + GUIEventName(CMsg&) + "   ID =" + STR$(Control_ID&)
                          CASE ELSE
-                              GUIPrintStatus "AnyKey - " + GUIEventName(CMsg&) + "   ID =" + STR$(Control_ID&)
                     END SELECT
                END IF
                ' ------------------------------------------
@@ -457,7 +465,7 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          END IF
                     CASE 2    ' Extra Button 2
                          IF CMsg&=%EZ_Click THEN
-                              GOSUB TestDraw
+                              GOSUB TestDrawBitmap
                          END IF
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
@@ -485,34 +493,186 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      FUNCTION=0
      EXIT FUNCTION
 
-TestDraw:
-' Graphic_Start X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+
+' Graphic_Scale X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle and scale window. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
 
 ' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
 ' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
 ' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
 ' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
 
-' Graphic_End                                           (end draw cycle and draw image using current draw stack)
+' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
 ' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
 ' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Start)
+' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Scale)
+' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
 
-LOCAL DG&, RX!, RY!, AspectY!, ActualY!
-AspectY! = Graphic_GetAspectRatio
-ActualY! = .8! * AspectY!
-Graphic_Start -.8!,-ActualY!, .8!, ActualY!, 1000    ' define image as 12 inches wide, height based on aspect ratio
-FOR DG& = 0 TO 360 STEP 5
-     Graphic_CalcPoint 0!,0!, ActualY!-.05!, DG&, RX!, RY!
-     IF DG& <> 0 THEN
-          Graphic_Color 22,0       ' set colors to light yellow on black
-          Graphic_LineTo RX!, RY!  ' add outside of circle line
-     END IF
-     Graphic_Color 17, 0   ' set colors to light blue on black
+TestDrawBitmap:
+LOCAL DG&, RX!, RY!, CircleDiam!
+LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
+LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
+yScrn& = 1200
+xScrn& = 800
+
+PixPerInch! = 0.04!
+yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
+xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
+
+
+PlotClr& = 15  ' white  DOS color index
+BackClr& = 0   ' black DOS color index
+ForeClr& = PlotClr&
+
+Graphic_Bitmap ySCRN&, xSCRN& ' call before drawing
+
+Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
+' Graphic Scale must come before all other commands, except Graphic_Bitmap
+Graphic_Color ForeClr&, BackClr&
+Graphic_Clear
+CircleDiam! = xScrn2! * 0.95!
+'FOR DG& = 0 TO 360 STEP 2
+'     Graphic_CalcPoint 0!,0!, CircleDiam!, DG&, RX!, RY!
+'     IF DG& <> 0 THEN
+'          Graphic_Color ForeClr&,BackClr&       ' set colors to light yellow on black
+'          Graphic_LineTo RX!, RY!  ' add outside of circle line
+'     END IF
+'     Graphic_Color ForeClr&, BackClr&   ' set colors to light blue on black
      Graphic_Line 0!,0!, RX!, RY!  ' draw radius line
-NEXT DG&
-Graphic_End
-Graphic_Show
+'NEXT DG&
+ WHILE ISFALSE EOF(1)
+
+       'clr1& = %RGB_LIGHTYELLOW
+    'draw transducer sides x4 (rectangle)
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+
+       ' GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+        'make sure all (4) corners of the rectangle are sealed before calling GRAPHIC PAINT, otherwise paint leaks out everywhere!!
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+       ' GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC PAINT (tempy1, tempx1), %RGB_ORANGE, clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+        'clr1& = %RGB_LIGHTYELLOW
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&  'RGB_WHITE 'LIGHTGOLDENRODYELLOW '%RGB_GHOSTWHITE 'draw line on HALO
+        Graphic_Line tempy1,tempx1, tempy2, tempx2
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+        'GRAPHIC ELLIPSE (tempy1,tempx1)-(tempy2,tempy2), %RGB_WHITE, -1 'orange, -1 '%WHITE, -1 'clr1&
+
+        'SLEEP 25
+        'Graphic_Clear
+        Graphic_Render
+        Graphic_Show
+        'GRAPHIC INKEY$ TO MyInput
+        'IF MyInput = $ESC THEN Terminate
+
+WEND
+Terminate:
+
+'GRAPHIC WAITKEY$
+
+'Graphic_Render
+'Graphic_Show
 RETURN
 
 

@@ -8,7 +8,7 @@
 #RESOURCE ".\rcdata\scanctrl.pbr"
 
 ' -------------------------------------------------------------------------------------
-%RealBackEnd   =    0         ' set this to 1 when using the real backend include file
+%RealBackEnd   =    1         ' set this to 1 when using the real backend include file
 ' -------------------------------------------------------------------------------------
 
 ' -------------------------------------------------------------------------------------
@@ -16,6 +16,7 @@ DECLARE FUNCTION Main_Initialize(BYVAL VerNum&) AS LONG
 DECLARE SUB InitGraphicStack(BYVAL MaxTasks&)
 DECLARE SUB InitOtherGlobals()
 DECLARE SUB SetUserInput(BYVAL CID&, BYVAL CMsg&, BYVAL CVal&)
+DECLARE SUB CopyCanvas()
 
 ' *************************************************************************************
 '                               GRAPHIC Form
@@ -27,10 +28,11 @@ DECLARE SUB GRAPHIC_Events(CID&, CMsg&, CVal&, Cancel&)
 ' ------------------------------------------------
 
 %GRAPHIC_BACKCANVAS         = 100
+%GRAPHIC_FRONTCANVAS         = 105
 
 DECLARE SUB GRAPHIC_BACKCANVAS_Draw(BYVAL FMode&)
-DECLARE SUB GRAPHIC_BACKCANVAS_Events(MyID&, CMsg&, CVal&, Cancel&)
-
+DECLARE SUB GRAPHIC_FRONTCANVAS_Events(MyID&, CMsg&, CVal&, Cancel&)
+DECLARE SUB SetBitmapSize(BYVAL N&)
 
 ' *************************************************************************************
 '                               SPLASH Form
@@ -152,6 +154,7 @@ SUB EZ_Main(VerNum&)     ' (PROTECTED)
      EZ_DefColorL 41, &H00D9FFD9
      EZ_DefColorL 42, &H0000E800
      EZ_DefColorL 43, &H007D7DFF
+     EZ_DefColorL 99, &H00111111
      LOCAL I&
      FOR I& = 0 TO 31    ' initialize colors
           EZ_Color I&,I&
@@ -667,7 +670,7 @@ SUB EZ_MAIN_Design()
      EZ_UseFont 4
      EZ_UseAutoSize "VHE1"
      EZ_SubClass 2
-     EZ_Canvas %MAIN_CANVASJOGCONTROL, 54.25, 0, 18, 9, "{DIB}"
+     EZ_Canvas %MAIN_CANVASJOGCONTROL, 54.25, 0, 18, 9, ""
      EZ_SetRegion "Main", %MAIN_CANVASJOGCONTROL, 1,0
      EZ_SubClass 0
      MAIN_CANVASJOGCONTROL_Draw -1
@@ -1329,6 +1332,10 @@ SUB EZ_MAIN_ParseEvents(CID&, CMsg&, CVal&, Cancel&)
                               TempW!=EZ_X(TempW!)
                               TempH!=EZ_Y(TempH!)
                               App_AspectRatio! = TempH! / TempW!
+                         CASE 103
+                              SetBitmapSize 1
+                         CASE 104
+                              CopyCanvas
                          CASE ELSE
                     END SELECT
                END IF
@@ -1635,30 +1642,78 @@ TYPE GTask
      Param5 AS GParam
      Param6 AS GParam
      Param7 AS GParam
+     Param8 AS ASCIIZ*256
 END TYPE
 
+GLOBAL App_DrawCycleFlag&
 GLOBAL App_GraphicTask() AS GTask
 GLOBAL App_GI&
 GLOBAL App_GMax&
 
+GLOBAL App_GP1 AS GParam
+GLOBAL App_GP2 AS GParam
+GLOBAL App_GP3 AS GParam
+GLOBAL App_GP4 AS GParam
 
 %App_Start     =    0
 %APP_GColor    =    1
 %App_GLine     =    2
 %APP_GLine2    =    3
 %App_GColorEZ  =    4
+%APP_GClear    =    5
+%APP_GPaint    =    6
+%APP_GBox      =    7
+%APP_GEllipse  =    8
+%App_GBuffer   =    9
+%App_GCopyBuffer =  10
+%App_GPrint      =  11
+
 
 SUB InitGraphicStack(BYVAL MaxTasks&)
      ' negative indexes will be used for storing attributes of drawing cycle
      REDIM App_GraphicTask(-100 TO MaxTasks&)
      App_GMax& = MaxTasks&
-     App_GI& = 0
+
 END SUB
 
-SUB Graphic_Start(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!, BYVAL MaxDrawStack&)
+SUB Graphic_Bitmap(BYVAL BWidth&, BYVAL BHeight&)
+     EZ_StartCSect 3
+     App_GP1.L = BWidth&
+     App_GP2.L = BHeight&
+     EZ_EndCSect 3
+     EZ_SendThreadEvent App_MainHandle&, %MAIN_FakeID, 103
+END SUB
+
+SUB SetBitmapSize(BYVAL N&)
+     SELECT CASE N&
+          CASE 1
+               LOCAL BWidth&, BHeight&, X&, Y&, W!, H!
+               EZ_StartCSect 3
+               BWidth& = App_GP1.L
+               BHeight& = App_GP2.L
+               EZ_EndCSect 3
+               EZ_GetSize "GRAPHIC", W!, H!, 2
+               IF BWidth& > W! OR BHeight&> H! THEN
+                    EZ_HideC "GRAPHIC", %GRAPHIC_BACKCANVAS, %GRAPHIC_BACKCANVAS
+                    EZ_ShowC "GRAPHIC", %GRAPHIC_FRONTCANVAS, %GRAPHIC_FRONTCANVAS
+                    EZ_ResizeC "GRAPHIC", %GRAPHIC_BACKCANVAS, 0,0, EZ_CX(BWidth&), EZ_CY(BHeight&)
+               ELSE
+                    ' Canvas fits inside Form
+                    X& = (W! - BWidth&)/2
+                    Y& = (H! - BHeight&)/2
+                    EZ_ResizeC "GRAPHIC", %GRAPHIC_BACKCANVAS, EZ_CX(X&),EZ_CY(Y&), EZ_CX(BWidth&), EZ_CY(BHeight&)
+                    EZ_ShowC "GRAPHIC", %GRAPHIC_BACKCANVAS, %GRAPHIC_BACKCANVAS
+                    EZ_HideC "GRAPHIC", %GRAPHIC_FRONTCANVAS, %GRAPHIC_FRONTCANVAS
+               END IF
+          CASE ELSE
+     END SELECT
+END SUB
+
+SUB Graphic_Scale(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!, BYVAL MaxDrawStack&)
      IF X2! < X1! THEN X2! = X1! + ABS(X2!)
      IF Y2! < Y1! THEN Y2! = Y1! + ABS(Y2!)
      EZ_StartCSect 3
+     App_DrawCycleFlag& = 1
      InitGraphicStack MaxDrawStack&
      App_GraphicTask(-100).TaskID = %App_Start   ' define coordinate system
      App_GraphicTask(-100).Param1.D = X2! - X1!     ' width
@@ -1667,6 +1722,7 @@ SUB Graphic_Start(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!, BYVAL MaxDrawStack
      App_GraphicTask(-100).Param4.D = Y1!
      App_GraphicTask(-100).Param5.D = X2!
      App_GraphicTask(-100).Param6.D = Y2!
+     App_GI& = 0
      EZ_EndCSect 3
 END SUB
 
@@ -1688,6 +1744,100 @@ SUB Graphic_Color(BYVAL FGColor&, BYVAL BGColor&)
      END IF
 END SUB
 
+SUB Graphic_Print(BYVAL X!, BYVAL Y!, BYVAL TextStr$)
+     IF App_GI& < App_GMax& THEN
+          App_GI& = App_GI& +1
+          App_GraphicTask(App_GI&).TaskID = %App_GPrint
+          App_GraphicTask(App_GI&).Param1.D = X!
+          App_GraphicTask(App_GI&).Param2.D = Y!
+          App_GraphicTask(App_GI&).Param8 = TextStr$
+     END IF
+END SUB
+
+SUB Graphic_CopyBuffer(BYVAL SrcBuffer&, BYVAL DestBuffer&)
+     IF App_GI& < App_GMax& THEN
+          IF SrcBuffer& = 1 OR SrcBuffer& = 2 THEN
+               IF SrcBuffer& <> DestBuffer& THEN
+                    IF DestBuffer& = 1 OR DestBuffer& = 2 THEN
+                         App_GI& = App_GI& +1
+                         App_GraphicTask(App_GI&).TaskID = %App_GCopyBuffer
+                         App_GraphicTask(App_GI&).Param1.L = SrcBuffer&
+                         App_GraphicTask(App_GI&).Param2.L = DestBuffer&
+                    END IF
+               END IF
+          END IF
+     END IF
+END SUB
+
+%EZCV_GETBITMAP                 =   %EZ_USER+109
+
+SUB CopyCanvas()
+     LOCAL DestNumber&, DestForm$, DestID&
+     LOCAL W&, H&, X&, Y&, W2&, H2&, NW&, NH&, hBmp&, hDC&
+     DestNumber& = 0
+     EZ_StartCSect 3
+     DestNumber& = App_GP1.L
+     EZ_EndCSect 3
+     EZ_SetText "MAIN", 0, "Copy ID "+STR$(DestNumber&)
+     SELECT CASE DestNumber&
+          CASE 1
+               DestForm$ = "MAIN"
+               DestID& = %MAIN_MAINCANVAS
+               GOSUB DrawBuffer
+          CASE 2
+               IF EZ_IsControl("GRAPHIC",%GRAPHIC_FRONTCANVAS, "V") THEN
+                    DestForm$ = "GRAPHIC"
+                    DestID& = %GRAPHIC_FRONTCANVAS
+                    GOSUB DrawBuffer
+               END IF
+          CASE ELSE
+     END SELECT
+     EXIT SUB
+
+DrawBuffer:
+IF App_DrawCycleFlag& = 0 THEN
+     hBmp& = EZ_SendMessageR("GRAPHIC", %GRAPHIC_BACKCANVAS,%EZCV_GETBITMAP,1,0)
+     EZ_GetCanvasSize "GRAPHIC", %GRAPHIC_BACKCANVAS, W&, H&
+     EZ_GetCanvasSize DestForm$, DestID&, W2&, H2&
+     IF W2& > H2& THEN
+          NH& = H2&
+          NW& = ((W&*100!)/(H&*100!))*H2&
+          Y& = 0
+          X& = (W2&-NW&)/2
+     ELSE
+          NW& = W2&
+          NH& = ((H&*100!)/(W&*100!))*W2&
+          X& = 0
+          Y& = (H2&-NH&)/2
+     END IF
+     EZ_StartDraw DestForm$, DestID&, W2&, H2&, ""
+     EZ_SetDrawMode 1, 4
+     hDC& = EZ_ActiveCanvasDC
+     EZ_DCDrawPicture hDC&, X&, Y&, NW&, NH&, hBmp&
+     EZ_EndDraw
+     EZ_RedrawControl DestForm$, DestID&
+END IF
+RETURN
+
+END SUB
+
+SUB Graphic_Copy(BYVAL DestNumber&)
+     EZ_StartCSect 3
+     App_GP1.L = DestNumber&
+     EZ_EndCSect 3
+     EZ_SendThreadEvent App_MainHandle&, %MAIN_FakeID, 104
+END SUB
+
+SUB Graphic_SelectBuffer(BYVAL BufferNumber&)
+     IF App_GI& < App_GMax& THEN
+          IF BufferNumber& = 1 OR BufferNumber& = 2 THEN
+               App_GI& = App_GI& +1
+               App_GraphicTask(App_GI&).TaskID = %App_GBuffer
+               App_GraphicTask(App_GI&).Param1.L = BufferNumber&
+          END IF
+     END IF
+END SUB
+
 SUB Graphic_Line(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!)
      IF App_GI& < App_GMax& THEN
           App_GI& = App_GI& +1
@@ -1698,6 +1848,40 @@ SUB Graphic_Line(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!)
           App_GraphicTask(App_GI&).Param4.D = Y2!
      END IF
 END SUB
+
+SUB Graphic_Box(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!, BYVAL FillFlag&)
+     IF App_GI& < App_GMax& THEN
+          App_GI& = App_GI& +1
+          App_GraphicTask(App_GI&).TaskID = %APP_GBox
+          App_GraphicTask(App_GI&).Param1.D = X1!
+          App_GraphicTask(App_GI&).Param2.D = Y1!
+          App_GraphicTask(App_GI&).Param3.D = X2!
+          App_GraphicTask(App_GI&).Param4.D = Y2!
+          App_GraphicTask(App_GI&).Param5.L = FillFlag&
+     END IF
+END SUB
+
+SUB Graphic_Ellipse(BYVAL X1!, BYVAL Y1!, BYVAL X2!, BYVAL Y2!, BYVAL FillFlag&)
+     IF App_GI& < App_GMax& THEN
+          App_GI& = App_GI& +1
+          App_GraphicTask(App_GI&).TaskID = %APP_GEllipse
+          App_GraphicTask(App_GI&).Param1.D = X1!
+          App_GraphicTask(App_GI&).Param2.D = Y1!
+          App_GraphicTask(App_GI&).Param3.D = X2!
+          App_GraphicTask(App_GI&).Param4.D = Y2!
+          App_GraphicTask(App_GI&).Param5.L = FillFlag&
+     END IF
+END SUB
+
+SUB Graphic_Paint(BYVAL X1!, BYVAL Y1!)
+     IF App_GI& < App_GMax& THEN
+          App_GI& = App_GI& +1
+          App_GraphicTask(App_GI&).TaskID = %APP_GPaint
+          App_GraphicTask(App_GI&).Param1.D = X1!
+          App_GraphicTask(App_GI&).Param2.D = Y1!
+     END IF
+END SUB
+
 
 SUB Graphic_LineTo(BYVAL X2!, BYVAL Y2!)
      IF App_GI& < App_GMax& THEN
@@ -1736,10 +1920,19 @@ SUB Graphic_CalcPoint(BYVAL X1!, BYVAL Y1!, BYVAL Length!, BYVAL Degrees&, RX!, 
      EZ_EndCSect 3
 END SUB
 
-SUB Graphic_End()
+
+SUB Graphic_Clear()
+     IF App_GI& < App_GMax& THEN
+          App_GI& = App_GI& +1
+          App_GraphicTask(App_GI&).TaskID = %APP_GClear
+     END IF
+END SUB
+
+SUB Graphic_Render()
      EZ_SendThreadEvent App_MainHandle&, %MAIN_FakeID, 100
      EZ_StartCSect 3
      App_GraphicTask(-100).TaskID = 0   ' clear flag so commands know draw cycle ends
+     App_DrawCycleFlag& = 0
      EZ_EndCSect 3
 END SUB
 
@@ -1776,6 +1969,7 @@ SUB GRAPHIC_BACKCANVAS_Draw(BYVAL FMode&)
                     CH& = ABS(AH! * GScale!)
                     PW& = 1
                     EZ_StartDraw "GRAPHIC", %GRAPHIC_BACKCANVAS, CW&, CH&, ""
+                    EZ_DefFont 99, "Arial", 768, "BVC"
                     FOR I&=1 TO App_GI&
 
                          SELECT CASE  AS CONST App_GraphicTask(I&).TaskID
@@ -1793,19 +1987,37 @@ SUB GRAPHIC_BACKCANVAS_Draw(BYVAL FMode&)
                                    EZ_ColorRGB App_GraphicTask(I&).Param1.L, App_GraphicTask(I&).Param2.L
                               CASE %App_GColorEZ
                                    EZ_Color App_GraphicTask(I&).Param1.L, App_GraphicTask(I&).Param2.L
-
+                              CASE %APP_GClear
+                                   GOSUB CalcPointsXY
+                                   EZ_CDraw %EZ_FLOODFILL, X1&, Y1&,0,0,1,1
+                              CASE %APP_GPaint
+                                   EZ_CDraw %EZ_FILL, 0,0, CW&, CH&,1,1
+                              CASE %APP_GBox
+                                   GOSUB CalcPoints
+                                   EZ_CDraw %EZ_RECT, X1&, Y1&, X2&, Y2&, PW&, App_GraphicTask(I&).Param5.L
+                              CASE %APP_GEllipse
+                                   GOSUB CalcPoints
+                                   EZ_CDraw %EZ_ELLIPSE, X1&, Y1&, X2&, Y2&, PW&, App_GraphicTask(I&).Param5.L
+                              CASE %App_GBuffer
+                                   EZ_CSelectBuffer App_GraphicTask(I&).Param1.L
+                              CASE %App_GCopyBuffer
+                                   EZ_CCopyBuffer App_GraphicTask(I&).Param1.L, App_GraphicTask(I&).Param2.L, 0
+                              CASE %App_GPrint
+                                   GOSUB CalcPointsXY
+                                   EZ_UseFont 99
+                                   EZ_CPrint X1&, Y1&, App_GraphicTask(I&).Param8
                               CASE ELSE
                          END SELECT
                     NEXT I&
                     EZ_EndDraw
+                    EZ_FreeFont 99
                     IF EZ_IsControl("GRAPHIC", %GRAPHIC_BACKCANVAS, "VS") THEN
                          EZ_RedrawControl "GRAPHIC", %GRAPHIC_BACKCANVAS
                     END IF
                END IF
 
           CASE -1   ' draw initial Picture
-               CW&=800     ' emulate 8 inches by .01 inch units
-               CH&=1050    ' emulate 10.5 inches by .01 inch units
+               EZ_GetCanvasSize "GRAPHIC", %GRAPHIC_BACKCANVAS, CW&, CH&
                EZ_StartDraw "GRAPHIC", %GRAPHIC_BACKCANVAS, CW&, CH&, ""
                EZ_EndDraw
           CASE ELSE
@@ -1819,6 +2031,11 @@ X1& = INT((App_GraphicTask(I&).Param1.D + DifX!) * GScale!)
 Y1& = INT((App_GraphicTask(I&).Param2.D + DifY!) * GScale!)
 X2& = INT((App_GraphicTask(I&).Param3.D + DifX!) * GScale!)
 Y2& = INT((App_GraphicTask(I&).Param4.D + DifY!) * GScale!)
+RETURN
+
+CalcPointsXY:
+X1& = INT((App_GraphicTask(I&).Param1.D + DifX!) * GScale!)
+Y1& = INT((App_GraphicTask(I&).Param2.D + DifY!) * GScale!)
 RETURN
 
 END SUB
@@ -1870,21 +2087,25 @@ END SUB
 
 SUB EZ_GRAPHIC_Display(BYVAL FParent$)     ' (PROTECTED)
      App_AspectRatio! = 1!
-     EZ_Color 0,0
-     EZ_Form "GRAPHIC", FParent$, "Graphic Display", 0, 0, 104, 34, "=CH"
-     EZ_MaxByScreen "GRAPHIC", 0, 0
+     EZ_Color 0,99
+     EZ_Form "GRAPHIC", FParent$, "Graphic Display", 0, 0, 104, 34, "_^CH"
+     EZ_MaxByScreen "GRAPHIC", 8, 8
 END SUB
 
 SUB EZ_GRAPHIC_Design()     ' (PROTECTED)
-     LOCAL CText$
+     ' -----------------------------------------------
      EZ_Color 15, 0
+     EZ_UseFont 4
+     EZ_Canvas %GRAPHIC_BACKCANVAS, 0, 0, 104, 34, "+TH{DBUF}"
+     GRAPHIC_BACKCANVAS_Draw -1
+     ' -----------------------------------------------
+     EZ_Color 15, 1
      EZ_UseFont 4
      EZ_AllowLoadingEvent 2
      EZ_UseAutoSize "VH"
      EZ_SubClass 2
-     EZ_Canvas %GRAPHIC_BACKCANVAS, 0, 0, 104, 34, "+T"
+     EZ_Canvas %GRAPHIC_FRONTCANVAS, 0, 0, 104, 34, "+T"
      EZ_SubClass 0
-     GRAPHIC_BACKCANVAS_Draw -1
      ' -----------------------------------------------
 END SUB
 
@@ -1893,8 +2114,8 @@ SUB EZ_GRAPHIC_ParseEvents(CID&, CMsg&, CVal&, Cancel&)     ' (PROTECTED)
      SELECT CASE CID&
           CASE %EZ_Window
                GRAPHIC_Events CID&, CMsg&, CVal&, Cancel&
-          CASE  %GRAPHIC_BACKCANVAS
-               GRAPHIC_BACKCANVAS_Events CID&, CMsg&, CVal&, Cancel&
+          CASE  %GRAPHIC_FRONTCANVAS
+               GRAPHIC_FRONTCANVAS_Events CID&, CMsg&, CVal&, Cancel&
           CASE ELSE
                GRAPHIC_Events CID&, CMsg&, CVal&, Cancel&
      END SELECT
@@ -1922,7 +2143,7 @@ SUB GRAPHIC_Events(CID&, CMsg&, CVal&, Cancel&)
      END SELECT
 END SUB
 
-SUB GRAPHIC_BACKCANVAS_Events( MyID&, CMsg&, CVal&, Cancel&)
+SUB GRAPHIC_FRONTCANVAS_Events( MyID&, CMsg&, CVal&, Cancel&)
      SELECT CASE CMsg&
           CASE %EZ_KeyUp
                IF CVal&=%EZK_ESC THEN EZ_UnloadForm "{ME}"
