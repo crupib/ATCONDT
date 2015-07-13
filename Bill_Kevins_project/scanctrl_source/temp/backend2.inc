@@ -205,7 +205,6 @@ GLOBAL SCN AS ScanVars
 ' GUI_EXTRA BN&, EnableFlag&                      (Enables or Disables EXTRA Buttons, BN& is Button number 1 to 18)
 ' KeyVal& = GUICheckKey(CMsg&, CVal&)             (Check to see if key event occurred)
 ' EventName$ = GUIEventName(CMsg&)                (Return name of Event as a string. Used only for keyboard events right now)
-' RV$ = GUIShowMCUSetup(DataString$)              (Show MCU (modal) Form and pass original data in DataString$ separated by | character and returns the same)
 
 ' -----------------------------------------------------------------------------------
 ' Graphic Commands      Coordinates are in FULL INCHES using floating point values
@@ -222,27 +221,18 @@ GLOBAL SCN AS ScanVars
 ' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
 ' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Scale)
 ' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
-' Graphic_Paint X1!, Y1!                                (Paint (fill) starting at X1!,Y1! until meets another color)
-' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&             (draw a Box from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if box is filled with background color)
-' Graphic_Ellipse X1!, Y1!, X2!, Y2!, FillFlag&         (draw a Ellipse from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if Ellipse is filled with background color)
-' Graphic_SelectBuffer BufferNumber&                    (select which image buffer to draw into either 1 or 2)
-' Graphic_CopyBuffer SrcBuffer&, DestBuffer&            (Copy one Bitmap Buffer to another. Buffers 1 and 2 available)
-' Graphic_Copy DestNumber&                              (Copy Bitmap Buffer 1 to another Canvas. DestNumber& =1 (main canvas), =2 (Graphic Canvas) call outside of draw cycle)
-' Graphic_Print X!, Y!, TextStr$                        (Print text string up to 255 characters at X!, Y! location)
 
 FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
+    LOCAL filename AS STRING
+    LOCAL filenumber AS INTEGER
+    LOCAL myoffset AS LONG
+    LOCAL tempstr AS STRING
+    LOCAL tempx1, tempx2, tempy1, tempy2 AS DOUBLE
      ' =====================================================================
      IF IFlag&=0 THEN EXIT FUNCTION     ' only run this code once in thread
      ' =====================================================================
-     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&, WhichCanvas&
+     LOCAL Control_ID&, CMsg&, CVal&, RV$, V#, CurrentTime AS EXTENDED, TimeSpan AS EXTENDED, KeyVal&
      STATIC ScanningFlag&, ScanCount&, ScanTime AS EXTENDED
-
-     ' Variables for drawing code
-     LOCAL DG&, RX!, RY!, CircleDiam!
-     LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
-     LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
-
-
      ' Initialize everything here before DO LOOP
      ScanningFlag& = 0 ' default not scanning
 
@@ -266,12 +256,11 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' define some of the extra buttons
      GUISetButton 1, "Show Graphic"
      GUISetButton 2, "Draw Bitmap"
-     GUISetButton 3, "Animate Small"
-     GUISetButton 4, "Animate Big"
-     GUISetButton 5, "Show MCU Setup"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
-     WhichCanvas& = 1
+      'wlc
+      OPEN EZ_AppPath+"axscan.dat" FOR BINARY AS #1 BASE = 0
+     myoffset = 0
      DO
           ' ----------------------------------------
           GUIGetUserInput Control_ID&, CMsg&, CVal&
@@ -478,23 +467,6 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                          IF CMsg&=%EZ_Click THEN
                               GOSUB TestDrawBitmap
                          END IF
-                    CASE 3    ' Extra Button 3
-                         IF CMsg& = %EZ_Click THEN
-                              WhichCanvas& = 1
-                              GOSUB TestAnimate
-                         END IF
-                    CASE 4    ' Extra Button 4
-                         IF CMsg& = %EZ_Click THEN
-                              WhichCanvas& = 2
-                              GOSUB TestAnimate
-                         END IF
-                    CASE 5
-                         IF CMsg& =  %EZ_Click THEN
-                              LOCAL OrigData$, NewData$
-                              ' currently 23 data fields
-                              OrigData$ = "Item 1|Item 2|Item 3|Item 4|Item 5|Item 6|Item 7|Item 8|Item 9|Item 10|Item 11|Item 12|Item 13|Item 14|Item 15|Item 16|Item 17|Item 18|Item 19|Item 20|Item 21|Item 22|Item 23"
-                              NewData$ = GUIShowMCUSetup(OrigData$)
-                         END IF
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
                          GUIPrintStatus "Control ID: "+STR$(Control_ID&)+"  Control Message: "+STR$(CMsg&)+"  Value: "+STR$(CVal&)
@@ -528,23 +500,19 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
 ' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
 ' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
 ' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
+
 ' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
 ' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
 ' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
 ' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Scale)
 ' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
-' Graphic_Paint X1!, Y1!                                (Paint (fill) starting at X1!,Y1! until meets another color)
-' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&             (draw a Box from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if box is filled with background color)
-' Graphic_Ellipse X1!, Y1!, X2!, Y2!, FillFlag&         (draw a Ellipse from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if Ellipse is filled with background color)
-' Graphic_SelectBuffer BufferNumber&                    (select which image buffer to draw into either 1 or 2)
-' Graphic_CopyBuffer SrcBuffer&, DestBuffer&            (Copy one Bitmap Buffer to another. Buffers 1 and 2 available)
-' Graphic_Copy DestNumber&                              (Copy Bitmap Buffer 1 to another Canvas. DestNumber& =1 (main canvas), =2 (Graphic Canvas) call outside of draw cycle)
-'            Graphic_Copy will be ignored if Graphic Back Canvas fits in form and is visible
-' Graphic_Print X!, Y!, TextStr$                        (Print text string up to 255 characters at X!, Y! location)
 
 TestDrawBitmap:
-yScrn& = 1800
-xScrn& = 1000
+LOCAL DG&, RX!, RY!, CircleDiam!
+LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
+LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
+yScrn& = 1200
+xScrn& = 800
 
 PixPerInch! = 0.04!
 yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
@@ -559,79 +527,152 @@ Graphic_Bitmap ySCRN&, xSCRN& ' call before drawing
 
 Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
 ' Graphic Scale must come before all other commands, except Graphic_Bitmap
-
-' Draw into Buffer 2 and we will copy it later
-Graphic_SelectBuffer 2
 Graphic_Color ForeClr&, BackClr&
 Graphic_Clear
 CircleDiam! = xScrn2! * 0.95!
-FOR DG& = 0 TO 360 STEP 2
-     Graphic_CalcPoint 0!,0!, CircleDiam!, DG&, RX!, RY!
-     IF DG& <> 0 THEN
-          Graphic_Color ForeClr&,BackClr&       ' set colors to light yellow on black
-          Graphic_LineTo RX!, RY!  ' add outside of circle line
-     END IF
-     Graphic_Color ForeClr&, BackClr&   ' set colors to light blue on black
+'FOR DG& = 0 TO 360 STEP 2
+'     Graphic_CalcPoint 0!,0!, CircleDiam!, DG&, RX!, RY!
+'     IF DG& <> 0 THEN
+'          Graphic_Color ForeClr&,BackClr&       ' set colors to light yellow on black
+'          Graphic_LineTo RX!, RY!  ' add outside of circle line
+'     END IF
+'     Graphic_Color ForeClr&, BackClr&   ' set colors to light blue on black
      Graphic_Line 0!,0!, RX!, RY!  ' draw radius line
-NEXT DG&
-Graphic_Print yScrn1!, 0, "Hello There !"
-Graphic_Render
-RETURN
+'NEXT DG&
+ WHILE ISFALSE EOF(1)
 
+       'clr1& = %RGB_LIGHTYELLOW
+    'draw transducer sides x4 (rectangle)
 
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
 
-TestAnimate:
-yScrn& = 1800
-xScrn& = 1000
+       ' GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
 
-PixPerInch! = 0.04!
-yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
-xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
 
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
 
-PlotClr& = 15  ' white  DOS color index
-BackClr& = 0   ' black DOS color index
-ForeClr& = PlotClr&
-LOCAL BoxColor&
-BoxColor& = 4  ' red
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
 
-' do not call Graphic_Bitmap since Graphic was already sized in previous routine
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2  ' draw radius line
+        'make sure all (4) corners of the rectangle are sealed before calling GRAPHIC PAINT, otherwise paint leaks out everywhere!!
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
 
-LOCAL BX!, BY!, BW!
-BW! = xScrn2! / 8!
-BY! = 0! - (BW!/2)
+       ' GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
 
-IF WhichCanvas& =  2 THEN
-     Graphic_Show
-END IF
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
 
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
 
-' LOCAL CT&, T1 AS EXTENDED, T2 AS EXTENDED, T$
-' CT&=0
-' T1=EZ_GetPTime
-LOCAL X1!, X2!,Y1!, Y2!
-FOR BX!=yScrn1! TO (yScrn2!-BW!) STEP (BW!/8)
-'     CT&=CT&+1
-     Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
-     Graphic_CopyBuffer 2,1   ' copy Buffer 2 to 1. 1 is front buffer and visible
-     Graphic_SelectBuffer 1
-     Graphic_Color ForeClr&, BoxColor&
-     X1! = BX!
-     Y1! = BY!
-     X2! = BX!
-     Y2! = BY!
-      graphic_line X1!, Y1!, X2!+10, Y2!
-      graphic_line X1!, Y1!, X2!, Y2+10!
-      graphic_line X1+10!, Y1!, X2!+10, Y2!+10
-      graphic_line X1!, Y1+10!, X2!+10, Y2+10!
-      graphic_paint X1!+5,Y1!+5
-    ' Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
-     Graphic_Render
-     Graphic_Copy WhichCanvas&
-NEXT BX!
-' T2=EZ_GetPTime
-' T$=FORMAT$(CT&/(T2-T1), "000.00")+" fps"
-' GUIMsgBox T$
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC SET PIXEL (tempy1,tempx1),clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+
+        'GRAPHIC PAINT (tempy1, tempx1), %RGB_ORANGE, clr1&
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+        'clr1& = %RGB_LIGHTYELLOW
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&  'RGB_WHITE 'LIGHTGOLDENRODYELLOW '%RGB_GHOSTWHITE 'draw line on HALO
+        Graphic_Line tempy1,tempx1, tempy2, tempx2
+
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+
+        'GRAPHIC LINE(tempy1,tempx1)-(tempy2,tempx2),clr1&
+        Graphic_Line tempy1,tempx1, tempy2, tempx2
+        GET  #1, myoffset,  tempy1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx1
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempy2
+        myoffset = myoffset + 10
+        GET  #1, myoffset,  tempx2
+        myoffset = myoffset + 10
+        'GRAPHIC ELLIPSE (tempy1,tempx1)-(tempy2,tempy2), %RGB_WHITE, -1 'orange, -1 '%WHITE, -1 'clr1&
+
+        'SLEEP 25
+        'Graphic_Clear
+        Graphic_Render
+        Graphic_Show
+        'GRAPHIC INKEY$ TO MyInput
+        'IF MyInput = $ESC THEN Terminate
+
+WEND
+Terminate:
+
+'GRAPHIC WAITKEY$
+
+'Graphic_Render
+'Graphic_Show
 RETURN
 
 

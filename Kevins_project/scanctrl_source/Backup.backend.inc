@@ -620,11 +620,11 @@ FOR BX!=yScrn1! TO (yScrn2!-BW!) STEP (BW!/8)
      Y1! = BY!
      X2! = BX!
      Y2! = BY!
-      graphic_line X1!, Y1!, X2!+10, Y2!
-      graphic_line X1!, Y1!, X2!, Y2+10!
-      graphic_line X1+10!, Y1!, X2!+10, Y2!+10
-      graphic_line X1!, Y1+10!, X2!+10, Y2+10!
-      graphic_paint X1!+5,Y1!+5
+'     graphic_line X1!, Y1!, X2!+10, Y2!
+      graphic_line X1!, Y1!, X2!, Y2-10!
+ '    graphic_line X1+10!, Y1!, X2!+10, Y2!+10
+ '    graphic_line X1!, Y1+10!, X2!+10, Y2+10!
+'     graphic_paint X1!-5,Y1!-5
     ' Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
      Graphic_Render
      Graphic_Copy WhichCanvas&

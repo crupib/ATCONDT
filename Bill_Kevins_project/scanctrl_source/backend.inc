@@ -205,7 +205,6 @@ GLOBAL SCN AS ScanVars
 ' GUI_EXTRA BN&, EnableFlag&                      (Enables or Disables EXTRA Buttons, BN& is Button number 1 to 18)
 ' KeyVal& = GUICheckKey(CMsg&, CVal&)             (Check to see if key event occurred)
 ' EventName$ = GUIEventName(CMsg&)                (Return name of Event as a string. Used only for keyboard events right now)
-' RV$ = GUIShowMCUSetup(DataString$)              (Show MCU (modal) Form and pass original data in DataString$ separated by | character and returns the same)
 
 ' -----------------------------------------------------------------------------------
 ' Graphic Commands      Coordinates are in FULL INCHES using floating point values
@@ -268,7 +267,6 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      GUISetButton 2, "Draw Bitmap"
      GUISetButton 3, "Animate Small"
      GUISetButton 4, "Animate Big"
-     GUISetButton 5, "Show MCU Setup"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
      WhichCanvas& = 1
@@ -479,22 +477,11 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                               GOSUB TestDrawBitmap
                          END IF
                     CASE 3    ' Extra Button 3
-                         IF CMsg& = %EZ_Click THEN
-                              WhichCanvas& = 1
-                              GOSUB TestAnimate
-                         END IF
+                         WhichCanvas& = 1
+                         GOSUB TestAnimate
                     CASE 4    ' Extra Button 4
-                         IF CMsg& = %EZ_Click THEN
-                              WhichCanvas& = 2
-                              GOSUB TestAnimate
-                         END IF
-                    CASE 5
-                         IF CMsg& =  %EZ_Click THEN
-                              LOCAL OrigData$, NewData$
-                              ' currently 23 data fields
-                              OrigData$ = "Item 1|Item 2|Item 3|Item 4|Item 5|Item 6|Item 7|Item 8|Item 9|Item 10|Item 11|Item 12|Item 13|Item 14|Item 15|Item 16|Item 17|Item 18|Item 19|Item 20|Item 21|Item 22|Item 23"
-                              NewData$ = GUIShowMCUSetup(OrigData$)
-                         END IF
+                         WhichCanvas& = 2
+                         GOSUB TestAnimate
 '                    Add Extra Buttons as you need them using ID's 2 to 18
                     CASE ELSE
                          GUIPrintStatus "Control ID: "+STR$(Control_ID&)+"  Control Message: "+STR$(CMsg&)+"  Value: "+STR$(CVal&)
@@ -609,23 +596,13 @@ END IF
 ' LOCAL CT&, T1 AS EXTENDED, T2 AS EXTENDED, T$
 ' CT&=0
 ' T1=EZ_GetPTime
-LOCAL X1!, X2!,Y1!, Y2!
 FOR BX!=yScrn1! TO (yScrn2!-BW!) STEP (BW!/8)
 '     CT&=CT&+1
      Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
      Graphic_CopyBuffer 2,1   ' copy Buffer 2 to 1. 1 is front buffer and visible
      Graphic_SelectBuffer 1
      Graphic_Color ForeClr&, BoxColor&
-     X1! = BX!
-     Y1! = BY!
-     X2! = BX!
-     Y2! = BY!
-      graphic_line X1!, Y1!, X2!+10, Y2!
-      graphic_line X1!, Y1!, X2!, Y2+10!
-      graphic_line X1+10!, Y1!, X2!+10, Y2!+10
-      graphic_line X1!, Y1+10!, X2!+10, Y2+10!
-      graphic_paint X1!+5,Y1!+5
-    ' Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
+     Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
      Graphic_Render
      Graphic_Copy WhichCanvas&
 NEXT BX!
