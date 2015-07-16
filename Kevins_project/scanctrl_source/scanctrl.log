@@ -3,25 +3,27 @@ Copyright (c) 1998-2011 PowerBasic Inc.
 Englewood, Florida USA
 All Rights Reserved
 
-Primary source:  C:\Users\crupib\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas   {4683 total lines}
+Primary source:  C:\Users\crupib\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas   {7295 total lines}
 Target compilation:  scanctrl.EXE
-Compile time:  0.1 seconds, at 5619600 lines/minute
+Compile time:  0.1 seconds, at 8754000 lines/minute
 
-54096 bytes compiled code, 16000 bytes RTLibrary,
-2884 bytes string literals, and 8096 bytes dgroup.
+95456 bytes compiled code, 17024 bytes RTLibrary,
+3416 bytes string literals, and 8312 bytes dgroup.
 Executable stack size:  1048576 bytes.
-Disk image: 86528 bytes   Memory image: 26980 bytes.
+Disk image: 131072 bytes   Memory image: 28752 bytes.
 
 Component Files:
 ----------------
 C:\Users\crupib\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas
 C:\USERS\CRUPIB\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\INCLUDES\EZGUI50.INC
 C:\USERS\CRUPIB\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\INCLUDES\EZWMAIN50.INC
+C:\USERS\CRUPIB\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\NMODULE.INC
 C:\USERS\CRUPIB\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\BACKEND.INC
 
 
 Code Extracted:
 ---------------
+GRAPHIC_BACKCANVAS_DRAW
 GUI_XPOS
 GUI_XONOFF
 GUI_YPOS
@@ -47,7 +49,11 @@ GUI_EXTRA
 GUIMSGBOX
 GUIWARNINGBOX
 GUIQUESTIONBOX
-GRAPHIC_COLORRGB
+GRAPHIC_COLOREZ
+GRAPHIC_LINETO
+GRAPHIC_COPYBUFFER
 GRAPHIC_BOX
-GRAPHIC_ELLIPSE
-GRAPHIC_GETASPECTRATIO
+GETX360
+GETRADIUSE
+GETRADIUSL
+GETRADIUSS

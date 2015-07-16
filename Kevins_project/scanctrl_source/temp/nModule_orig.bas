@@ -4,9 +4,30 @@
 'Started new name:    nModule.bas
 '====================================================================
 
-#COMPILER PBCC 6
+' #COMPILER PBCC 6
 '#CONSOLE OFF
+
 #DIM ALL
+
+%App_Scan1 = 0
+%App_RasterAxial = 1
+
+'Common RGB Colors
+%RGB_BLACK   = &H00000000???
+%RGB_BLUE    = &H00FF0000???
+%RGB_GREEN   = &H0000FF00???
+%RGB_CYAN    = &H00FFFF00???
+%RGB_RED     = &H000000FF???
+%RGB_MAGENTA = &H00FF00FF???
+%RGB_YELLOW  = &H0000FFFF???
+%RGB_WHITE   = &H00FFFFFF???
+%RGB_GRAY    = &H00808080???
+%RGB_LTGRAY  = &H00C0C0C0???
+%RGB_ORANGE  = &H0000FFFF???
+
+%RGB_HOTPINK = &H008888FF???
+%RGB_GOLD     = &H0000CCCC???
+%RGB_LIGHTYELLOW = &H0088FFFF???
 
 MACRO Pi =  3.14159265358979323846#
 
@@ -1964,10 +1985,9 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 
         GRAPHIC REDRAW                              'Re-Draw the screen snappaly
 
+  '     PRINT "Run Axial Scans"
 
-  '      PRINT "Run Axial Scans"
-
-'        GRAPHIC WAITKEY$
+'       GRAPHIC WAITKEY$
 
 
         xspeed# = 1.00# : yspeed# = 1.00#  'should always be the same for coord' motion
@@ -2208,7 +2228,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 '       K$ = INKEY$
 '    LOOP UNTIL K$ = ""
 
-    BEEP : GRAPHIC WAITKEY$
+    BEEP : WAITKEY$
 
 END SUB
 
@@ -2474,8 +2494,8 @@ FUNCTION PBMAIN
     'GRAPHIC WINDOW STABILIZE hWin(0) 'user can't close window
     GRAPHIC SET FOCUS
 
-    FONT NEW "Times New Roman", 12, 1 TO hFont&
-    GRAPHIC SET FONT hFont&
+    GRAPHIC FONT "Times New Roman", 12, 1
+'    GRAPHIC SET FONT hFont&
 
 
 
@@ -2499,13 +2519,13 @@ FUNCTION PBMAIN
 
     GRAPHIC ATTACH hWin(0), 0&,REDRAW           'select standard window
 
-    FONT NEW "Times New Roman", 20, 1 TO hFont&
-    GRAPHIC SET FONT hFont&
+    GRAPHIC FONT "Times New Roman", 20, 1
+'    GRAPHIC SET FONT hFont&
 
     GenerateModel(VARPTR(nRay))
 
-    FONT NEW "Times New Roman", 12, 1 TO hFont&
-    GRAPHIC SET FONT hFont&
+    GRAPHIC FONT "Times New Roman", 12, 1
+'    GRAPHIC SET FONT hFont&
 '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -2544,7 +2564,11 @@ FUNCTION PBMAIN
 
     GRAPHIC COPY hwin(1), 0&
 
+#IF %App_Scan1
     GOTO CircScan  'User selected Circ UT Beam Scan Path Segments: "GenCircSegments"
+#ELSE
+
+#ENDIF
 
     'OR          'User selected Axial UT Beam Scan Path Segments: "GenAxialSegments", below
 
@@ -2567,8 +2591,11 @@ FUNCTION PBMAIN
 
     'set by user, RasterAxial is back and forth scan motion, to and from the weld
     'If RasterAxial is False, scan motion is side to side, parallel along the weld
+#IF %App_RasterAxial
     nRay.RasterAxial = True 'False
-
+#ELSE
+    nRay.RasterAxial = False
+#ENDIF
     GenAxialSegments (VARPTR(nRay),VARPTR(sPath))
 
 
@@ -2633,7 +2660,11 @@ CircScan:
     'set by user, RasterAxial is back and forth scan motion, to and from the weld
     'If RasterAxial is False, scan motion is side to side, parallel along the weld
     'normal for a CIRC UT BEAM Scan is RasterAxial = False
-    nRay.RasterAxial = False 'True 'False
+#IF %App_RasterAxial
+    nRay.RasterAxial = True 'False
+#ELSE
+    nRay.RasterAxial = False
+#ENDIF
 
     'In addtion to above values, specific to a CIRC UT BEAM Scan as opposed to a AXIAL UT BEAM Scan,
     'being more complex, requires the additional parameters:

@@ -1,152 +1,9 @@
-MACRO CONST = MACRO
 'misc const values
-CONST ENABLE =  1
-CONST DISABLE = 0
+MACRO ENABLE =  1
+MACRO DISABLE = 0
 
-TYPE ScanVars
-
-    YCtr        AS DOUBLE      'YCts/inch
-    XCtr        AS DOUBLE      'XCts/inch
-    ZCtr        AS DOUBLE      'ZCts/Degree
-    ACtr        AS DOUBLE      'Aux Enc Cts/inch
-
-    YCal        AS DOUBLE      'Y Cal Inch distance
-    XCal        AS DOUBLE      'X Cal Inch distance
-    ZCal        AS DOUBLE      'Z Cal Degree distance
-    ACal        AS DOUBLE      'Aux Cal Inch distance
-
-    XOffset     AS DOUBLE      'X inch pos when counter zeroed
-    YOffset     AS DOUBLE      'Y inch pos when counter zeroed
-    ZOffset     AS DOUBLE      'Z degree pos when counter zeroed
-    AOffset     AS DOUBLE      'A Inch pos when counter zeroed
-
-    XPos        AS DOUBLE      'current X inch position
-    YPos        AS DOUBLE      'current Y inch position
-    ZPos        AS DOUBLE      'current Z inch position
-    APos        AS DOUBLE      'current A inch position
-
-    XPlus       AS INTEGER      'X scan +/-
-    YPlus       AS INTEGER      'Y scan +/-
-    ZPlus       AS INTEGER      'Z scan +/-
-
-    XDataStart  AS LONG         'x array position for scan start
-    YDataStart  AS LONG         'y array position for scan start
-    ZDataStart  AS LONG         'Z array position for scan start
-
-    XDataEnd    AS LONG         'x array position for scan end
-    YDataEnd    AS LONG         'y array position for scan end
-    ZDataEnd    AS LONG         'z array position for scan end
-
-    XIndex      AS DOUBLE      'x inch index
-    YIndex      AS DOUBLE      'y inch index
-    ZIndex      AS DOUBLE      'z inch index
-
-    XIndexCts   AS LONG         'x actual value (+/-) counts per index
-    YIndexCts   AS LONG         'y actual value (+/-) counts per index
-    ZIndexCts   AS LONG         'z actual value (+/-) counts per index
-
-    IndexDir    AS INTEGER      'Index towards High or Low: RN IndexLow
-
-    XCts        AS LONG         'x absolute value scan start counts
-    YCts        AS LONG         'y absolute value scan start counts
-    ZCts        AS LONG         'z absolute value scan start counts
-    ACts        AS LONG         'a absolute value scan start counts
-
-    XStartCts   AS LONG         'x actual value (+/-) scan start counts
-    YStartCts   AS LONG         'y actual value (+/-) scan start counts
-    ZStartCts   AS LONG         'z actual value (+/-) scan start counts
-
-    XEndCts     AS LONG         'x actual value (+/-) scan end counts
-    YEndCts     AS LONG         'y actual value (+/-) scan end counts
-    ZEndCts     AS LONG         'z actual value (+/-) scan end counts
-
-    XLow        AS DOUBLE      'x scan start inch position
-    YLow        AS DOUBLE      'y scan start inch position
-    ZLow        AS DOUBLE      'z scan start inch position
-
-    XHigh       AS DOUBLE      'x scan end inch position
-    YHigh       AS DOUBLE      'y scan end inch position
-    ZHigh       AS DOUBLE      'z scan end inch position
-
-    OverLap     AS DOUBLE      'added si scan overlap
-
-    XSpeed      AS DOUBLE      'x scan speed in inches
-    YSpeed      AS DOUBLE      'y scan speed in inches
-    ZSpeed      AS DOUBLE      'z scan speed in inches
-
-    XEnable     AS INTEGER      'flag true/false X axis on
-    YEnable     AS INTEGER      'flag true/false Y axis on
-    ZEnable     AS INTEGER      'flag true/false Z axis on
-
-    XSpdDir     AS INTEGER      'flag X speed cntrl direction
-    IndexY      AS INTEGER      'flag true/false index on X or Y, circ or ax scan
-    StopChk     AS INTEGER      'flag true/false autoOff on/off
-    DualRas     AS INTEGER        'flag true/false double raster each index
-    AutoHold    AS INTEGER      'flag true/false Auto Hold
-    IndexCt     AS INTEGER      'index loop counter
-    IndexInc    AS INTEGER      'index loop incrementer
-    ScanFlag    AS INTEGER      '
-    Index       AS INTEGER      'scan direction
-    NextFlag    AS INTEGER      'added for si auto scan increment
-
-    YCtrStr     AS STRING * 10
-    XCtrStr     AS STRING * 10
-    ZCtrStr     AS STRING * 10
-    ACtrStr     AS STRING * 10
-
-    YCalStr     AS STRING * 10  'Y Cal Inch distance
-    XCalStr     AS STRING * 10  'X Cal Inch distance
-    ZCalStr     AS STRING * 10  'Z Cal Inch distance
-    ACalStr     AS STRING * 10  'A Cal Inch distance
-
-    XPosStr     AS STRING * 10
-    YPosStr     AS STRING * 10
-    ZPosStr     AS STRING * 10
-    APosStr     AS STRING * 10
-
-    XPlusSTR    AS STRING * 10
-    YPlusSTR    AS STRING * 10
-    ZPlusSTR    AS STRING * 10
-
-    XIndexSTR   AS STRING * 10
-    YIndexSTR   AS STRING * 10
-    ZIndexSTR   AS STRING * 10
-
-    IndexLowStr AS STRING * 10
-
-    XLowStr     AS STRING * 10
-    YLowStr     AS STRING * 10
-    ZLowStr     AS STRING * 10
-
-    XHighStr    AS STRING * 10
-    YHighStr    AS STRING * 10
-    ZHighStr    AS STRING * 10
-
-    OverLapStr  AS STRING * 10
-
-    XSpeedSTR   AS STRING * 10
-    YSpeedSTR   AS STRING * 10
-    ZSpeedSTR   AS STRING * 10
-
-    XEnableSTR  AS STRING * 10
-    YEnableSTR  AS STRING * 10
-    ZEnableSTR  AS STRING * 10
-
-    XSpdDirSTR  AS STRING * 10
-
-    IndexYSTR   AS STRING * 10
-
-    StopChkSTR  AS STRING * 10
-
-    DualRasSTR  AS STRING * 10
-
-    NextFlagSTR AS STRING * 10
-
-    AutoHoldSTR AS STRING * 10
-
-END TYPE
-
-GLOBAL SCN AS ScanVars
+%App_MainCanvas = 0
+%App_PopupCanvas = 1
 
 ' Extra Buttons have IDs 1 to 18
 ' File menu has IDs from 50 to 56
@@ -208,28 +65,31 @@ GLOBAL SCN AS ScanVars
 ' RV$ = GUIShowMCUSetup(DataString$)              (Show MCU (modal) Form and pass original data in DataString$ separated by | character and returns the same)
 
 ' -----------------------------------------------------------------------------------
-' Graphic Commands      Coordinates are in FULL INCHES using floating point values
+' Graphic Commands
 ' -----------------------------------------------------------------------------------
-' Graphic_Scale X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle and scale window. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
+' Graphic_SizeDrawStack MaxStack&                 (Sets Size of Thread Drawing stack. Does a reset so don't call during an Attach cycle)
+' Graphic_Show                                    (Show Large Graphic Window)
+' Graphic_SelectCanvas N&, W&, H&                 (Select which Canvas to draw on. N& = 0 MAIN, = 1 GRAPHIC Window. Returns current size of Canvas in pixels in W& and H&)
+' Graphic_Attach AMode&, RedrawMode&              (Attach to a Graphic window. AMode& = 0 Window, = 1 Bitmap. RedrawMode& = 1 redraw control)
+' Graphic_Scale X1!, Y1!, X2!, Y2!                (Scale coordinate system. Must be called right after Graphic_Attach or else pixels used)
+' Graphic_Redraw ContinueFlag&                    (Redraw Graphic window or Bitmap now. If ContinueFlag& = 0 then must do another Graphic_Attach to continue drawing)
+' Graphic_Render                                  (Redraw Graphic bitmap or window. Must call Graphic_Attach to again to do more drawing)
+' Graphic_ColorEZ EZ_FGColor&, EZ_BGColor&        (set colors using EZGUI color indexes)
+' Graphic_Color FGColor&, BGColor&                (set colors using RGB colors)
+' Graphic_Clear                                   (Cleat Graphic window using current colors)
+' Graphic_Line X1!, Y1!, X2!, Y2!, RGBColor&      (Draw line which includes endpoints)
+' Graphic_LineX X1!, Y1!, X2!, Y2!, RGBColor&     (Draw line which excludes endpoints)
+' Graphic_LineTo X2!, Y2!, RGBColor&              (draw line from last line endpoint, which includes current endpoint)
+' Graphic_Print X!, Y!, TextStr$                  (Print text string up to 255 characters)
+' Graphic_Copy                                    (Copy background (bitmap) buffer to foreground (window))
+' Graphic_Paint X1!, Y1!, FillColor&, BorderColor& (Paint (Fill) area from point until hits border color)
+' Graphic_Font FontNumber&                        (Select current Font number)
+' Graphic_CopyBuffer SrcBuffer&, DestBuffer&      (Copy one buffer to another)
+' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&       (Draw a Box using current colors. Filled box set FillFlag& to 1)
+' Graphic_Width LineWidth&                        (Set current linewidth)
+' Graphic_Style GStyle&                           (Set Line style. 0 = solid, 1 = dots)
 
-' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
-' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
-' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
-' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
-
-' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
-' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
-' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' XtoYAspect! = Graphic_GetAspectRatio                  (get aspect ratio of X axis to Y axis (X divided by Y) for Graphic Window. Call before Graphic_Scale)
-' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
-' Graphic_Paint X1!, Y1!                                (Paint (fill) starting at X1!,Y1! until meets another color)
-' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&             (draw a Box from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if box is filled with background color)
-' Graphic_Ellipse X1!, Y1!, X2!, Y2!, FillFlag&         (draw a Ellipse from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if Ellipse is filled with background color)
-' Graphic_SelectBuffer BufferNumber&                    (select which image buffer to draw into either 1 or 2)
-' Graphic_CopyBuffer SrcBuffer&, DestBuffer&            (Copy one Bitmap Buffer to another. Buffers 1 and 2 available)
-' Graphic_Copy DestNumber&                              (Copy Bitmap Buffer 1 to another Canvas. DestNumber& =1 (main canvas), =2 (Graphic Canvas) call outside of draw cycle)
-' Graphic_Print X!, Y!, TextStr$                        (Print text string up to 255 characters at X!, Y! location)
-
+' GUI_Print T$                                    (Print to Statusbar. Use this instead of console Print command)
 FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      ' =====================================================================
      IF IFlag&=0 THEN EXIT FUNCTION     ' only run this code once in thread
@@ -238,10 +98,12 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      STATIC ScanningFlag&, ScanCount&, ScanTime AS EXTENDED
 
      ' Variables for drawing code
-     LOCAL DG&, RX!, RY!, CircleDiam!
-     LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
-     LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
+'     LOCAL DG&, RX!, RY!, CircleDiam!
+'     LOCAL ySCRN&, xSCRN&, PlotClr&, ForeClr&,BackClr&
+'     LOCAL yScrn1!, xScrn1!, yScrn2!, xScrn2! , PixPerInch!
+     LOCAL W&, H&
 
+     Graphic_SizeDrawStack 5000
 
      ' Initialize everything here before DO LOOP
      ScanningFlag& = 0 ' default not scanning
@@ -265,13 +127,16 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      GUISetJogText "10"
      ' define some of the extra buttons
      GUISetButton 1, "Show Graphic"
-     GUISetButton 2, "Draw Bitmap"
-     GUISetButton 3, "Animate Small"
-     GUISetButton 4, "Animate Big"
+'     GUISetButton 2, "Draw Bitmap"
+'     GUISetButton 3, "Animate Small"
+'     GUISetButton 4, "Animate Big"
      GUISetButton 5, "Show MCU Setup"
      ' disable scan stop button since no scanning yet
      GUI_STOPSCAN 0
      WhichCanvas& = 1
+     ' ------------------------------------------------------------------------------
+     Graphic_SizeDrawStack 5000    ' sets draw stack size and need not be called again
+     ' ------------------------------------------------------------------------------
      DO
           ' ----------------------------------------
           GUIGetUserInput Control_ID&, CMsg&, CVal&
@@ -472,21 +337,18 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
                     ' -------------------------------------
                     CASE 1    ' Extra Button 1
                          IF CMsg&=%EZ_Click THEN
-                              Graphic_Show   ' Show Graphic Window above MAIN form
+                              Graphic_Show
+                              Graphic_SelectCanvas %App_PopupCanvas, W&, H&
+                              RunScan 2, 1, W&, H&, 0.04!
                          END IF
                     CASE 2    ' Extra Button 2
                          IF CMsg&=%EZ_Click THEN
-                              GOSUB TestDrawBitmap
                          END IF
                     CASE 3    ' Extra Button 3
                          IF CMsg& = %EZ_Click THEN
-                              WhichCanvas& = 1
-                              GOSUB TestAnimate
                          END IF
                     CASE 4    ' Extra Button 4
                          IF CMsg& = %EZ_Click THEN
-                              WhichCanvas& = 2
-                              GOSUB TestAnimate
                          END IF
                     CASE 5
                          IF CMsg& =  %EZ_Click THEN
@@ -520,119 +382,6 @@ FUNCTION BackEndThreadFunc(BYVAL IFlag&) AS LONG
      LOOP
      FUNCTION=0
      EXIT FUNCTION
-
-
-' Graphic_Scale X1!, Y1!, X2!, Y2!, MaxDrawStack&       (start draw cycle and scale window. Define coordinate system. MaxDrawStack& = maximum drawing tasks allowed this cycle)
-
-' Graphic_ColorRGB FGColor&, BGColor&                   (define current FG and BG colors using actual RGB colors)
-' Graphic_Color FGColor&, BGColor&                      (define current FG and BG colors using EZGUI color indexes)
-' Graphic_Line X1!, Y1!, X2!, Y2!                       (draw Line from X1!,Y1! to X2!,Y2! using current color)
-' Graphic_LineTo X2!, Y2!                               (draw line from end of last line or point to X2!,Y2! using current color)
-' Graphic_Render                                        (end draw cycle and draw image using current draw stack)
-' Graphic_Show                                          (show Graphic Window, which is above MAIN form)
-' Graphic_CalcPoint X1!, Y1!,Length!,Degrees&,RX!,RY!   (calculate endpoint of line from X1!,Y1! which is Length! long at Degrees! angle. Return endpoint in RX!,RY!)
-' YtoXAspect! = Graphic_GetAspectRatio                  (get aspect ratio of Y axis to X axis (Y divided by X) for Graphic Window. Call before Graphic_Scale)
-' Graphic_Bitmap BWidth&, BHeight&                      (define Background Canvas Size in pixels)
-' Graphic_Paint X1!, Y1!                                (Paint (fill) starting at X1!,Y1! until meets another color)
-' Graphic_Box X1!, Y1!, X2!, Y2!, FillFlag&             (draw a Box from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if box is filled with background color)
-' Graphic_Ellipse X1!, Y1!, X2!, Y2!, FillFlag&         (draw a Ellipse from X1!,Y1! to X2!,Y2!. Set FillFlag& to 1 if Ellipse is filled with background color)
-' Graphic_SelectBuffer BufferNumber&                    (select which image buffer to draw into either 1 or 2)
-' Graphic_CopyBuffer SrcBuffer&, DestBuffer&            (Copy one Bitmap Buffer to another. Buffers 1 and 2 available)
-' Graphic_Copy DestNumber&                              (Copy Bitmap Buffer 1 to another Canvas. DestNumber& =1 (main canvas), =2 (Graphic Canvas) call outside of draw cycle)
-'            Graphic_Copy will be ignored if Graphic Back Canvas fits in form and is visible
-' Graphic_Print X!, Y!, TextStr$                        (Print text string up to 255 characters at X!, Y! location)
-
-TestDrawBitmap:
-yScrn& = 1800
-xScrn& = 1000
-
-PixPerInch! = 0.04!
-yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
-xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
-
-
-PlotClr& = 15  ' white  DOS color index
-BackClr& = 0   ' black DOS color index
-ForeClr& = PlotClr&
-
-Graphic_Bitmap ySCRN&, xSCRN& ' call before drawing
-
-Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
-' Graphic Scale must come before all other commands, except Graphic_Bitmap
-
-' Draw into Buffer 2 and we will copy it later
-Graphic_SelectBuffer 2
-Graphic_Color ForeClr&, BackClr&
-Graphic_Clear
-CircleDiam! = xScrn2! * 0.95!
-FOR DG& = 0 TO 360 STEP 2
-     Graphic_CalcPoint 0!,0!, CircleDiam!, DG&, RX!, RY!
-     IF DG& <> 0 THEN
-          Graphic_Color ForeClr&,BackClr&       ' set colors to light yellow on black
-          Graphic_LineTo RX!, RY!  ' add outside of circle line
-     END IF
-     Graphic_Color ForeClr&, BackClr&   ' set colors to light blue on black
-     Graphic_Line 0!,0!, RX!, RY!  ' draw radius line
-NEXT DG&
-Graphic_Print yScrn1!, 0, "Hello There !"
-Graphic_Render
-RETURN
-
-
-
-TestAnimate:
-yScrn& = 1800
-xScrn& = 1000
-
-PixPerInch! = 0.04!
-yScrn1! = -(ySCRN& * .400! * PixPerInch!): yScrn2! = ySCRN& * .400! * PixPerInch!
-xScrn1! = -(xSCRN& * .400! * PixPerInch!): xScrn2! = xSCRN& * .400! * PixPerInch!
-
-
-PlotClr& = 15  ' white  DOS color index
-BackClr& = 0   ' black DOS color index
-ForeClr& = PlotClr&
-LOCAL BoxColor&
-BoxColor& = 4  ' red
-
-' do not call Graphic_Bitmap since Graphic was already sized in previous routine
-
-LOCAL BX!, BY!, BW!
-BW! = xScrn2! / 8!
-BY! = 0! - (BW!/2)
-
-IF WhichCanvas& =  2 THEN
-     Graphic_Show
-END IF
-
-
-' LOCAL CT&, T1 AS EXTENDED, T2 AS EXTENDED, T$
-' CT&=0
-' T1=EZ_GetPTime
-LOCAL X1!, X2!,Y1!, Y2!
-FOR BX!=yScrn1! TO (yScrn2!-BW!) STEP (BW!/8)
-'     CT&=CT&+1
-     Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!, 1000 ' last parameter defines stack size for number of Graphic calls allowed
-     Graphic_CopyBuffer 2,1   ' copy Buffer 2 to 1. 1 is front buffer and visible
-     Graphic_SelectBuffer 1
-     Graphic_Color ForeClr&, BoxColor&
-     X1! = BX!
-     Y1! = BY!
-     X2! = BX!
-     Y2! = BY!
-      graphic_line X1!, Y1!, X2!+10, Y2!
-      graphic_line X1!, Y1!, X2!, Y2+10!
-      graphic_line X1+10!, Y1!, X2!+10, Y2!+10
-      graphic_line X1!, Y1+10!, X2!+10, Y2+10!
-      graphic_paint X1!+5,Y1!+5
-    ' Graphic_Box BX!, BY!, BX!+BW!, BY!+BW!,1
-     Graphic_Render
-     Graphic_Copy WhichCanvas&
-NEXT BX!
-' T2=EZ_GetPTime
-' T$=FORMAT$(CT&/(T2-T1), "000.00")+" fps"
-' GUIMsgBox T$
-RETURN
 
 
 END FUNCTION
