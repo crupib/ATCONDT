@@ -1,0 +1,20 @@
+Classic PowerBASIC Console Compiler
+Classic PB/CC   Version 4.06 
+Copyright (c) 1998-2010 PowerBasic Inc.
+Englewood, Florida USA
+All Rights Reserved
+
+Primary source:  C:\ClasCC\KEVINS~2\SCANCT~1\nModulefirst.bas   {2742 total lines}
+Target compilation:  nModulefirst.exe
+Compile time:  0.1 seconds, at 3290400 lines/minute
+
+42180 bytes compiled code, 17447 bytes RTLibrary,
+656 bytes string literals, and 2956 bytes dgroup.
+Executable stack size:  1048576 bytes.
+Disk image: 68096 bytes   Memory image: 21059 bytes.
+
+Component Files:
+----------------
+C:\CLASCC\KEVINS~2\SCANCT~1\NMODULEFIRST.BAS
+
+

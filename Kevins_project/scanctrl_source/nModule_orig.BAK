@@ -4,16 +4,14 @@
 'Started new name:    nModule.bas
 '====================================================================
 
-' --------------------------
-' WARNING !!!!!!
-' --------------------------
-' Note CONST is a PB keyword so may cause problems with the SELECT CASE statement which uses CONST !
+' #COMPILER PBCC 6
+'#CONSOLE OFF
 
+#DIM ALL
 
-%UseSleep    =   0
+%App_Scan1 = 0
+%App_RasterAxial = 0
 
-%REDRAW       =  1
-%NOREDRAW     =  0
 'Common RGB Colors
 %RGB_BLACK   = &H00000000???
 %RGB_BLUE    = &H00FF0000???
@@ -44,33 +42,33 @@ MACRO ArcSinA(SinA) = ( ArcSin(SinA)*57.29577951308232# )'ArcSin in degrees'
 
 MACRO SQ(SquareIt) = (SquareIt*SquareIt) 'Macro to square a number, because PBCC doesn't like the use of ^caret in all cases
 
+MACRO CONST = MACRO
+CONST Rads0 = (0.000#)
+CONST Rads9 = (Pi*0.050#)
+CONST Rads45 = (Pi*0.250#)
+CONST Rads90 = (Pi*0.500#)
+CONST Rads135 = (Pi*0.750#)
+CONST Rads180 = (Pi)
+CONST Rads225 = (Pi*1.250#)
+CONST Rads270 = (Pi*1.500#)
+CONST Rads315 = (Pi*1.750#)
+CONST Rads360 = (Pi*2.000#)
+CONST Rads540 = (Pi*3.000#)
 
-MACRO Rads0 = (0.000#)
-MACRO Rads9 = (Pi*0.050#)
-MACRO Rads45 = (Pi*0.250#)
-MACRO Rads90 = (Pi*0.500#)
-MACRO Rads135 = (Pi*0.750#)
-MACRO Rads180 = (Pi)
-MACRO Rads225 = (Pi*1.250#)
-MACRO Rads270 = (Pi*1.500#)
-MACRO Rads315 = (Pi*1.750#)
-MACRO Rads360 = (Pi*2.000#)
-MACRO Rads540 = (Pi*3.000#)
-
-MACRO Rads0inv = Rads360    'for Scan begin, Rads0inv + Rads360 = 360 degrees, with MOD360 equals 0 degrees
-MACRO Rads90inv = Rads270   ' "
-MACRO Rads180inv = Rads180  ' "
-MACRO Rads270inv = Rads90   ' "
+CONST Rads0inv = Rads360    'for Scan begin, Rads0inv + Rads360 = 360 degrees, with MOD360 equals 0 degrees
+CONST Rads90inv = Rads270   ' "
+CONST Rads180inv = Rads180  ' "
+CONST Rads270inv = Rads90   ' "
 
 
-MACRO DegRatio= (1.00#/360.00#)
-MACRO RadsRatio =(1.00#/ (Pi*2.00#) )'/360.00# )
-MACRO Half = (0.500#)
-MACRO Fourth = (0.250#)
-MACRO TRUE = (-1)
-MACRO FALSE = (NOT -1)
+CONST DegRatio= (1.00#/360.00#)
+CONST RadsRatio =(1.00#/ (Pi*2.00#) )'/360.00# )
+CONST Half = (0.500#)
+CONST Fourth = (0.250#)
+CONST TRUE = (-1)
+CONST FALSE = (NOT -1)
 
-MACRO Mil = 1000000
+CONST Mil = 1000000
 
 
 '********************************************************************************************************************************
@@ -663,7 +661,7 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
 
     '@uGFX.ballRad = 0.200#                  'meatball radius
 
-    Graphic_Width 1&
+    GRAPHIC WIDTH 1&
 
     'Locate x & y position of the near and far sides of the transducer case.
     '***************************************************************************************************************************
@@ -717,22 +715,19 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
 
     '********************************************************************************************************************
     'draw transducer sides x4 (rectangle)
-    Graphic_Line y(3), x(3), y(4), x(4), @uGFX.cprobeClr  'draw probe side 1
-    Graphic_Line y(5), x(5), y(6), x(6), @uGFX.cprobeClr  'draw probe side 2
-    Graphic_Line y(3), x(3), y(5), x(5), @uGFX.cprobeClr  'draw probe side 3
-    Graphic_Line y(4), x(4), y(6), x(6), @uGFX.cprobeClr  'draw probe side 4
+    GRAPHIC LINE(y(3),x(3))-(y(4),x(4)),@uGFX.cprobeClr  'draw probe side 1
+    GRAPHIC LINE(y(5),x(5))-(y(6),x(6)),@uGFX.cprobeClr  'draw probe side 2
+    GRAPHIC LINE(y(3),x(3))-(y(5),x(5)),@uGFX.cprobeClr  'draw probe side 3
+    GRAPHIC LINE(y(4),x(4))-(y(6),x(6)),@uGFX.cprobeClr  'draw probe side 4
 
     'make sure all (4) corners of the rectangle are sealed before calling GRAPHIC PAINT, otherwise paint leaks out everywhere!!
-' ------------------------------------------------
-' Not needed any more
-' ------------------------------------------------
-'    GRAPHIC SET PIXEL (y(3),x(3)),@uGFX.cprobeClr
-'    GRAPHIC SET PIXEL (y(4),x(4)),@uGFX.cprobeClr
-'    GRAPHIC SET PIXEL (y(5),x(5)),@uGFX.cprobeClr
-'    GRAPHIC SET PIXEL (y(6),x(6)),@uGFX.cprobeClr
-' ------------------------------------------------
+    GRAPHIC SET PIXEL (y(3),x(3)),@uGFX.cprobeClr
+    GRAPHIC SET PIXEL (y(4),x(4)),@uGFX.cprobeClr
+    GRAPHIC SET PIXEL (y(5),x(5)),@uGFX.cprobeClr
+    GRAPHIC SET PIXEL (y(6),x(6)),@uGFX.cprobeClr
+
     'paint inside the transducer case
-    Graphic_Paint y(8), x(8), @uGFX.cprobefillClr, @uGFX.cprobeClr
+    GRAPHIC PAINT (y(8), x(8)), @uGFX.cprobefillClr, @uGFX.cprobeClr
 
     '***********************************************************************************************************
     'draw tangent line in reference to weld normal angle
@@ -747,7 +742,7 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
         x(12) = @uGFX.TngtLine * COS(thetaRads)+ x(7) 'xPos2# 'get real xPos of current angle
         y(12) = @uGFX.TngtLine * SIN(thetaRads)+ y(7) 'yPos2# 'get real yPos of current angle
 
-        Graphic_LineX y(11), x(11), y(12), x(12), @uGFX.TngtLineClr   ' may need X version
+        GRAPHIC LINE(y(11),x(11))-(y(12),x(12)),@uGFX.TngtLineClr
     END IF
 
     '***********************************************************************************************************
@@ -761,7 +756,7 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
     x(12) = @uGFX.CentLine * COS(thetaRads)+ xPos 'get real xPos of current angle
     y(12) = @uGFX.CentLine * SIN(thetaRads)+ yPos 'get real yPos of current angle
 
-    Graphic_LineX y(11), x(11), y(12), x(12), @uGFX.CentLineClr   ' may need X version
+    GRAPHIC LINE(y(11),x(11))-(y(12),x(12)),@uGFX.CentLineClr
 
     '***********************************************************************************************************
     'draw line through weld, 90 degrees to UT beam axis, projected sideways
@@ -775,7 +770,7 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
         x(12) = x(7) - (@uGFX.NormLine * COS(thetaRads)) 'get real xPos of current angle
         y(12) = y(7) - (@uGFX.NormLine * SIN(thetaRads)) 'get real yPos of current angle
 
-        Graphic_LineX y(11), x(11), y(12), x(12), @uGFX.NormLineClr   ' may need X version
+        GRAPHIC LINE(y(11),x(11))-(y(12),x(12)),@uGFX.NormLineClr
     END IF
 
     '***********************************************************************************************************
@@ -789,7 +784,7 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
     x(12) = x(9) - (@uGFX.IdxLine * COS(thetaRads)) 'get real xPos of current angle
     y(12) = y(9) - (@uGFX.IdxLine * SIN(thetaRads)) 'get real yPos of current angle
 
-    Graphic_LineX y(11), x(11), y(12), x(12), @uGFX.IdxLineClr   ' may need X version
+    GRAPHIC LINE(y(11),x(11))-(y(12),x(12)),@uGFX.IdxLineClr
 
 
     'draw meatball at transducer offset distance
@@ -797,14 +792,14 @@ SUB PlotCircProbe(xPos AS DOUBLE, yPos AS DOUBLE, zPos AS DOUBLE, thetaStart AS 
     y(11) = y(7) - @uGFX.ballRad ' y position left
     x(12) = x(7) + @uGFX.ballRad 'outer cross hair x position bottom
     y(12) = y(7) + @uGFX.ballRad 'outer cross hair y position right
-    GRaphic_Ellipse y(11), x(11), y(12), x(12), @uGFX.offsetBallClr
+    GRAPHIC ELLIPSE (y(11),x(11))-(y(12),x(12)), @uGFX.offsetBallClr
 
     'meatball at x,y transducer center
     x(11) = x(9) - @uGFX.ballRad 'transducer x position
     y(11) = y(9) - @uGFX.ballRad 'transducer y position
     x(12) = x(9) + @uGFX.ballRad 'transducer x position
     y(12) = y(9) + @uGFX.ballRad 'transducer y position
-    Graphic_Ellipse y(11), x(11), y(12), x(12), @uGFX.probeBallClr
+    GRAPHIC ELLIPSE (y(11),x(11))-(y(12),x(12)), @uGFX.probeBallClr
 
 
 END SUB
@@ -878,21 +873,18 @@ SUB PlotAxProbe(BYVAL xPos AS DOUBLE, BYVAL yPos AS DOUBLE, BYVAL zPos AS DOUBLE
     y(6) = (@uSCN.aProbeWidth*half) * SIN(thetaRads)+ y(2) 'get real xPos of current angle
 
     'draw transducer sides x4 (rectangle)
-    Graphic_Line y(3), x(3), y(4), x(4), @uGFX.aprobeClr
-    Graphic_Line y(5), x(5), y(6), x(6), @uGFX.aprobeClr
-    Graphic_Line y(3), x(3), y(5), x(5), @uGFX.aprobeClr
-    Graphic_Line y(4), x(4), y(6), x(6), @uGFX.aprobeClr
+    GRAPHIC LINE(y(3),x(3))-(y(4),x(4)),@uGFX.aprobeClr
+    GRAPHIC LINE(y(5),x(5))-(y(6),x(6)),@uGFX.aprobeClr
+    GRAPHIC LINE(y(3),x(3))-(y(5),x(5)),@uGFX.aprobeClr
+    GRAPHIC LINE(y(4),x(4))-(y(6),x(6)),@uGFX.aprobeClr
 
     'make sure all (4) corners of the rectangle are sealed before calling GRAPHIC PAINT, otherwise paint leaks out everywhere!!
-' -------------------------------------------------
-' Not needed anymore
-' -------------------------------------------------
-'    GRAPHIC SET PIXEL (y(3),x(3)),@uGFX.aprobeClr
-'    GRAPHIC SET PIXEL (y(4),x(4)),@uGFX.aprobeClr
-'    GRAPHIC SET PIXEL (y(5),x(5)),@uGFX.aprobeClr
-'    GRAPHIC SET PIXEL (y(6),x(6)),@uGFX.aprobeClr
+    GRAPHIC SET PIXEL (y(3),x(3)),@uGFX.aprobeClr
+    GRAPHIC SET PIXEL (y(4),x(4)),@uGFX.aprobeClr
+    GRAPHIC SET PIXEL (y(5),x(5)),@uGFX.aprobeClr
+    GRAPHIC SET PIXEL (y(6),x(6)),@uGFX.aprobeClr
 
-    Graphic_Paint y(8), x(8), @uGFX.aprobefillClr, @uGFX.aprobeClr
+    GRAPHIC PAINT (y(8), x(8)), @uGFX.aprobefillClr, @uGFX.aprobeClr
 
     '***********************************************************************************************************
     'draw transducer index line
@@ -905,7 +897,7 @@ SUB PlotAxProbe(BYVAL xPos AS DOUBLE, BYVAL yPos AS DOUBLE, BYVAL zPos AS DOUBLE
     x(12) = (@uGFX.IdxLine * COS(thetaRads))+ xPos 'get real xPos of current angle
     y(12) = (@uGFX.IdxLine * SIN(thetaRads))+ yPos 'get real yPos of current angle
 
-    Graphic_LineX y(11), x(11), y(12), x(12), @uGFX.IdxLineClr   ' may need X version
+    GRAPHIC LINE(y(11),x(11))-(y(12),x(12)), @uGFX.IdxLineClr
 
     '***********************************************************************************************************
     'draw transducer centerline
@@ -918,14 +910,14 @@ SUB PlotAxProbe(BYVAL xPos AS DOUBLE, BYVAL yPos AS DOUBLE, BYVAL zPos AS DOUBLE
     x(12) = xPos - (@uGFX.CentLine * COS(thetaRads)) 'get real xPos of current angle
     y(12) = yPos - (@uGFX.CentLine * SIN(thetaRads)) 'get real yPos of current angle
 
-    Graphic_LineX y(11), x(11), y(12), x(12), @uGFX.CentLineClr   ' may need X version
+    GRAPHIC LINE(y(11),x(11))-(y(12),x(12)), @uGFX.CentLineClr
 
     'meatball at x,y transducer center
     x(11) = xPos - @uGFX.ballRad 'transducer -x position
     y(11) = yPos - @uGFX.ballRad 'transducer -y position
     x(12) = xPos + @uGFX.ballRad  'transducer +x position
     y(12) = yPos + @uGFX.ballRad  'transducer +y position
-    Graphic_Ellipse y(11), x(11), y(12), x(12), @uGFX.probeBallClr
+    GRAPHIC ELLIPSE (y(11),x(11))-(y(12),x(12)), @uGFX.probeBallClr
 
 END SUB
 
@@ -978,7 +970,7 @@ SUB DrawScanModel(BYVAL RayPtr AS DWORD, BYVAL uGFXptr AS DWORD)
     NEXT
 
 
-    Graphic_Width 1& 'line width
+    GRAPHIC WIDTH 1& 'line width
 
 
     'draw radial lines at normal angle to weld perimeter, chord spacing based upon user set index
@@ -986,38 +978,33 @@ SUB DrawScanModel(BYVAL RayPtr AS DWORD, BYVAL uGFXptr AS DWORD)
 
 
         IF index = 0 THEN
-              ' may need X version
-           Graphic_LineX @Ray.eYpos(index), @Ray.eXpos(index), @Ray.sYpos(index), @Ray.sXpos(index), @uGFX.eStartClr   'scan start degree position
+           GRAPHIC LINE(@Ray.eYpos(index),@Ray.eXpos(index))-(@Ray.sYpos(index),@Ray.sXpos(index)),@uGFX.eStartClr   'scan start degree position
         ELSEIF index = @Ray.i_xIndexEnd THEN
-               ' may need X version
-           Graphic_LineX @Ray.eYpos(index), @Ray.eXpos(index), @Ray.sYpos(index), @Ray.sXpos(index), @uGFX.eEndClr 'scan end degree position
+           GRAPHIC LINE(@Ray.eYpos(index),@Ray.eXpos(index))-(@Ray.sYpos(index),@Ray.sXpos(index)),@uGFX.eEndClr 'scan end degree position
         ELSEIF @Ray.i_xExtraIndx AND (index > = (@Ray.i_xIndexEnd-@Ray.i_xExtraIndx)) THEN
-               ' may need X version
-           Graphic_LineX @Ray.eYpos(index), @Ray.eXpos(index), @Ray.sYpos(index), @Ray.sXpos(index), @uGFX.eExtraClr 'scan overlap lines
+           GRAPHIC LINE(@Ray.eYpos(index),@Ray.eXpos(index))-(@Ray.sYpos(index),@Ray.sXpos(index)),@uGFX.eExtraClr 'scan overlap lines
         ELSE
-               ' may need X version
-           Graphic_LineX @Ray.eYpos(index), @Ray.eXpos(index), @Ray.sYpos(index), @Ray.sXpos(index), @uGFX.eRadialClr 'all other lines
+           GRAPHIC LINE(@Ray.eYpos(index),@Ray.eXpos(index))-(@Ray.sYpos(index),@Ray.sXpos(index)),@uGFX.eRadialClr 'all other lines
         END IF
 
 
         IF index < @Ray.i_xIndexEnd THEN
 
            'draw outer perimeter chords
-              ' may need X version
-           Graphic_LineX @Ray.sYpos(index), @Ray.sXpos(index), @Ray.sYpos(index+1), @Ray.sXpos(index+1), @uGFX.eOutPClr
-           'Graphic_Line -(nRay.sYpos(index+1),nRay.sXpos(index+1)),%RED
+           GRAPHIC LINE(@Ray.sYpos(index),@Ray.sXpos(index))-(@Ray.sYpos(index+1),@Ray.sXpos(index+1)),@uGFX.eOutPClr
+           'GRAPHIC LINE -(nRay.sYpos(index+1),nRay.sXpos(index+1)),%RED
         END IF
 
      NEXT
 
-    Graphic_Style 0&
+    GRAPHIC STYLE 0&
 
 
 
     '***********************************************************************************************************
     '  DRAW Nozzle weld and normal angles within perimeter
     '***********************************************************************************************************
-    Graphic_Width 1& 'line width
+    GRAPHIC WIDTH 1& 'line width
 
     @Ray.thetaRads = @Ray.eNormAngRads(@Ray.i_xIndexEnd+1) : cosA =  COS(@Ray.thetaRads) : sinA =  SIN(@Ray.thetaRads)
 
@@ -1044,30 +1031,26 @@ SUB DrawScanModel(BYVAL RayPtr AS DWORD, BYVAL uGFXptr AS DWORD)
         ' draw Inner HAZ: normal lines and perimeter
         '************************************************************************************************************************
         x(1) = @Ray.eXpos(index)-(offset1 * cosA) : y(1) = @Ray.eYpos(index)-(offset1 * sinA)
-           ' may need X version
-        Graphic_LineX 0, @Ray.eOriginX(index), y(1), x(1), @uGFX.eInsideClr 'draw normal angle line to inside HAZ
-        Graphic_LineX y(1), x(1), y(2), x(2), @uGFX.eHAZPClr                  'draw perimeter around inside HAZ
+        GRAPHIC LINE(0, @Ray.eOriginX(index))-(y(1), x(1)),@uGFX.eInsideClr 'draw normal angle line to inside HAZ
+        GRAPHIC LINE(y(1),x(1))-(y(2),x(2)),@uGFX.eHAZPClr                  'draw perimeter around inside HAZ
 
         ' draw Inner weld: normal lines and perimeter
         '************************************************************************************************************************
         x(3) = @Ray.eXpos(index)-(offset2 * cosA) : y(3) = @Ray.eYpos(index)-(offset2 * sinA)
-           ' may need X version
-        Graphic_LineX y(1), x(1), y(3), x(3), @uGFX.eHAZClr   'draw normal angle line to inside weld line
-        Graphic_LineX y(3), x(3), y(4), x(4), @uGFX.eWeldPClr 'draw perimeter around inside weld
+        GRAPHIC LINE(y(1),x(1))-(y(3),x(3)),@uGFX.eHAZClr   'draw normal angle line to inside weld line
+        GRAPHIC LINE(y(3),x(3))-(y(4),x(4)),@uGFX.eWeldPClr 'draw perimeter around inside weld
 
         ' draw Outer Weld: normal lines and perimeter
         '************************************************************************************************************************
         x(5) = @Ray.eXpos(index)-(offset3 * cosA) : y(5) = @Ray.eYpos(index)-(offset3 * sinA)
-           ' may need X version
-        Graphic_LineX y(3), x(3), y(5), x(5), @uGFX.eWeldClr 'draw normal angle lines inside perimeter to outer weld
-        Graphic_LineX y(5), x(5), y(6), x(6), @uGFX.eWeldPClr 'draw outside perimeter around weld
+        GRAPHIC LINE(y(3),x(3))-(y(5),x(5)),@uGFX.eWeldClr 'draw normal angle lines inside perimeter to outer weld
+        GRAPHIC LINE(y(5),x(5))-(y(6),x(6)),@uGFX.eWeldPClr 'draw outside perimeter around weld
 
         ' draw Outer HAZ: normal lines and perimeter
         '************************************************************************************************************************
         x(7) = @Ray.eXpos(index) : y(7) = @Ray.eYpos(index)
-           ' may need X version
-        Graphic_LineX y(5), x(5), y(7), x(7), @uGFX.eHAZClr 'draw normal angle lines inside perimeter to outside HAZ
-        Graphic_LineX y(7), x(7), y(8), x(8), @uGFX.eHAZPClr 'draw chords around outside perimeter HAZ
+        GRAPHIC LINE(y(5),x(5))-(y(7),x(7)),@uGFX.eHAZClr 'draw normal angle lines inside perimeter to outside HAZ
+        GRAPHIC LINE(y(7),x(7))-(y(8),x(8)),@uGFX.eHAZPClr 'draw chords around outside perimeter HAZ
 
         ' update old values to new values
         y(2) = y(1) : x(2) = x(1) : y(4) = y(3) : x(4) = x(3) : y(6) = y(5) : x(6) = x(5) : y(8) = y(7) : x(8) = x(7)
@@ -1206,21 +1189,21 @@ SUB GenerateModel(BYVAL RayPtr AS DWORD)
         'Calculate percentage done - update screen if it has changed
         doneCtr2 = ROUND( ((@Ray.thetaInc-@Ray.thetaS)*DoneRatio), 0      )
         IF DoneCtr2 <> DoneCtr1 THEN
-           Graphic_Print 0,0,  "% DONE: " + STR$(doneCtr2)+ "       "
-           Graphic_Redraw 1
+           GRAPHIC SET POS (0,0): GRAPHIC PRINT "% DONE: " + STR$(doneCtr2)+ "       "
+           GRAPHIC REDRAW
            DoneCtr1 = DoneCtr2
         END IF
 
         IF @Ray.thetaflag AND (@Ray.thetaInc => @Ray.theta360) THEN
            @Ray.thetaflag = False
            @Ray.i_xIndex360 = x_Index
-           GUI_Print "Index at 360 Degrees: "+STR$(@Ray.i_xIndex360)
+           PRINT "Index at 360 Degrees: "; @Ray.i_xIndex360
         END IF
 
         'added 45 degrees scan overlap
         IF @Ray.thetaInc => @Ray.theta405 THEN
            @Ray.i_xIndex405 = x_Index  'at 405 degrees or more
-           GUI_Print "Index at 405 Degrees: " + STR$(@Ray.i_xIndex405)
+           PRINT "Index at 405 Degrees: "; @Ray.i_xIndex405
            EXIT DO  'exit loop: theta increment is => 405 degrees:
         END IF
 
@@ -1966,14 +1949,14 @@ END SUB
 
 
 
-SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS DWORD, BYVAL GFXPtr AS DWORD)
+SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS DWORD, BYVAL GFXPtr AS DWORD, BYVAL gWinPtrBitmap AS DWORD)
 
 
         LOCAL Ray AS FociRay POINTER
         LOCAL sPath AS ScanSegment POINTER
-'        LOCAL gWinBitMap AS LONG POINTER  'graphic window pointer - yikes!   (DO NOT USE since no pointer currently passed)
+        LOCAL gWinBitMap AS LONG POINTER  'graphic window pointer - yikes!
 
-'        gWinBitMap = gWinPtrBitmap   ' (DO NOT USE since no pointer currently passed)
+        gWinBitMap = gWinPtrBitmap
 
         Ray = RayPtr      'Set the pointer from the DWORD param
         sPath = sPathPtr
@@ -1996,11 +1979,11 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
         xImgPos2# = @Ray.eArcTotal(0)
         yImgPos2# = @Ray.r_yBegin
 
-        Graphic_Copy    'copy bitmap to standard window
+        GRAPHIC COPY @gWinBitmap, 0&    'copy bitmap to standard window
 
         PlotAxProbe(xPos2#, yPos2#, zPos2#, @Ray.thetaS, SCNPtr, GFXPtr) 'Draw Transducer and features at current angle and position
 
-        Graphic_Redraw 1                              'Re-Draw the screen snappaly
+        GRAPHIC REDRAW                              'Re-Draw the screen snappaly
 
   '     PRINT "Run Axial Scans"
 
@@ -2167,7 +2150,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 
                  '**************************************************************************************************************************************************
 
-                 Graphic_Copy                'copy static nozzle scan model to standard window
+                 GRAPHIC COPY @gWinBitmap, 0&                    'copy static nozzle scan model to standard window
 
 
                  PlotAxProbe(xPos2#, yPos2#, zPos2#, @Ray.thetaS, SCNPtr, GFXPtr) 'Draw Transducer and features at current angle and position
@@ -2175,8 +2158,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 
                  'TEST results: draw line at our newly found location
                  'visually see how well it lines up with known coordiantes
-                    ' may need X version
-                 Graphic_LineX 0, @Ray.nOriginX, yPos2#, xPos2#, %RGB_HOTPINK
+                 GRAPHIC LINE(0,@Ray.nOriginX)-(yPos2#,xPos2#), %RGB_HOTPINK
 
                  'goto skiptext
 
@@ -2200,31 +2182,31 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
                  sTxt(14)="yImg_Error# : " + STR$(ROUND(yImg_Error#,6))+"            "
 
 
-                 Graphic_Print -26.00!, -16.00!, sTxt(0)
-                 Graphic_Print -26.00!, -15.00!, sTxt(1)
-                 Graphic_Print -26.00!, -14.00!, sTxt(2)
-                 Graphic_Print -26.00!, -13.00!, sTxt(3)
+                 GRAPHIC SET POS(-26.00!,-16.00!):GRAPHIC PRINT sTxt(0)
+                 GRAPHIC SET POS(-26.00!,-15.00!):GRAPHIC PRINT sTxt(1)
+                 GRAPHIC SET POS(-26.00!,-14.00!):GRAPHIC PRINT sTxt(2)
+                 GRAPHIC SET POS(-26.00!,-13.00!):GRAPHIC PRINT sTxt(3)
 
-                 Graphic_Print -26.00!, -12.00!, sTxt(4)
-                 Graphic_Print -26.00!, -11.00!, sTxt(5)
-                 Graphic_Print -26.00!, -10.00!, sTxt(6)
+                 GRAPHIC SET POS(-26.00!,-12.00!):GRAPHIC PRINT sTxt(4)
+                 GRAPHIC SET POS(-26.00!,-11.00!):GRAPHIC PRINT sTxt(5)
+                 GRAPHIC SET POS(-26.00!,-10.00!):GRAPHIC PRINT sTxt(6)
 
-                 Graphic_Print -26.00!, -9.00!, sTxt(7)
-                 Graphic_Print -26.00!, -8.00!, sTxt(8)
-                 Graphic_Print -26.00!, -7.00!, sTxt(9)
-                 Graphic_Print -26.00!, -6.00!, sTxt(10)
+                 GRAPHIC SET POS(-26.00!,-9.00!):GRAPHIC PRINT sTxt(7)
+                 GRAPHIC SET POS(-26.00!,-8.00!):GRAPHIC PRINT sTxt(8)
+                 GRAPHIC SET POS(-26.00!,-7.00!):GRAPHIC PRINT sTxt(9)
+                 GRAPHIC SET POS(-26.00!,-6.00!):GRAPHIC PRINT sTxt(10)
 
 
-                 Graphic_Print -26.00!, -5.00!, sTxt(11)
-                 Graphic_Print -26.00!, -4.00!, sTxt(12)
-                 Graphic_Print -26.00!, -3.00!, sTxt(13)
-                 Graphic_Print -26.00!, -2.00!, sTxt(14)
-                 Graphic_Print -26.00!, -1.00!, sTxt(15)
+                 GRAPHIC SET POS(-26.00!,-5.00!):GRAPHIC PRINT sTxt(11)
+                 GRAPHIC SET POS(-26.00!,-4.00!):GRAPHIC PRINT sTxt(12)
+                 GRAPHIC SET POS(-26.00!,-3.00!):GRAPHIC PRINT sTxt(13)
+                 GRAPHIC SET POS(-26.00!,-2.00!):GRAPHIC PRINT sTxt(14)
+                 GRAPHIC SET POS(-26.00!,-1.00!):GRAPHIC PRINT sTxt(15)
 
-                 Graphic_Redraw 1                              'Re-Draw the screen snappaly
+                 GRAPHIC REDRAW                              'Re-Draw the screen snappaly
 
                  IF (@sPath.yImgSeg(lCtr&)=0) AND (@sPath.xImgSeg(lCtr&)<>0) THEN 'x index
-                     IF %UseSleep THEN SLEEP 10
+                     SLEEP 10
                  END IF
 
                  'GRAPHIC WAITKEY$
@@ -2234,7 +2216,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 
             NEXT
 
-            IF %UseSleep THEN SLEEP 10 '500
+            SLEEP 10 '500
         NEXT
 
 
@@ -2246,17 +2228,17 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 '       K$ = INKEY$
 '    LOOP UNTIL K$ = ""
 
-'    BEEP : WAITKEY$
+    BEEP : WAITKEY$
 
 END SUB
 
-SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS DWORD, BYVAL GFXPtr AS DWORD)
+SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS DWORD, BYVAL GFXPtr AS DWORD, BYVAL gWinPtrBitmap AS DWORD)
 
         LOCAL Ray AS FociRay POINTER
         LOCAL sPath AS ScanSegment POINTER
-'        LOCAL gWinBitMap AS LONG POINTER  'graphic window pointer - yikes!  (DO NOT USE since no pointer currently passed)
+        LOCAL gWinBitMap AS LONG POINTER  'graphic window pointer - yikes!
 
-'        gWinBitMap = gWinPtrBitmap   ' (DO NOT USE since no pointer currently passed)
+        gWinBitMap = gWinPtrBitmap
         Ray = RayPtr
         sPath = sPathPtr
 
@@ -2279,11 +2261,11 @@ SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS 
         yImgPos2# = @Ray.r_yBegin
 
 
-        Graphic_Copy    'copy bitmap to standard window
+        GRAPHIC COPY @gWinBitmap, 0&    'copy bitmap to standard window
 
         PlotCircProbe(xPos2#, yPos2#, zPos2#, @Ray.thetaS, SCNPtr, GFXPtr) 'Draw Transducer and features at current angle and position
 
-        Graphic_Redraw 1                             'Re-Draw the screen snappaly
+        GRAPHIC REDRAW                              'Re-Draw the screen snappaly
 
 '       PRINT "Run Circ Scan"
 
@@ -2390,7 +2372,7 @@ SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS 
                  yImgPos2# = yImgPos2# + (yImgCts2& * yImgCtsF#)
                  '******************************************************************************************************
 
-                 Graphic_Copy                     'copy static nozzle scan model to standard window
+                 GRAPHIC COPY @gWinBitmap, 0&                    'copy static nozzle scan model to standard window
 
                  PlotCircProbe(xPos2#, yPos2#, zPos2#, @Ray.thetaS, SCNPtr, GFXPtr) 'Draw Transducer and features at current angle and position
 
@@ -2409,30 +2391,30 @@ SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS 
                  sTxt(15)="yImg_Error#:  " + STR$(ROUND(yImg_Error#,6))+"            "
 
 
-                 Graphic_Print -26.00!, -16.00!, sTxt(0)
-                 Graphic_Print -26.00!, -15.00!, sTxt(1)
-                 Graphic_Print -26.00!, -14.00!, sTxt(2)
-                 Graphic_Print -26.00!, -13.00!, sTxt(3)
+                 GRAPHIC SET POS(-26.00!,-16.00!):GRAPHIC PRINT sTxt(0)
+                 GRAPHIC SET POS(-26.00!,-15.00!):GRAPHIC PRINT sTxt(1)
+                 GRAPHIC SET POS(-26.00!,-14.00!):GRAPHIC PRINT sTxt(2)
+                 GRAPHIC SET POS(-26.00!,-13.00!):GRAPHIC PRINT sTxt(3)
 
-                 Graphic_Print -26.00!, -12.00!, sTxt(4)
-                 Graphic_Print -26.00!, -11.00!, sTxt(5)
-                 Graphic_Print -26.00!, -10.00!, sTxt(6)
+                 GRAPHIC SET POS(-26.00!,-12.00!):GRAPHIC PRINT sTxt(4)
+                 GRAPHIC SET POS(-26.00!,-11.00!):GRAPHIC PRINT sTxt(5)
+                 GRAPHIC SET POS(-26.00!,-10.00!):GRAPHIC PRINT sTxt(6)
 
-                 Graphic_Print -26.00!, -5.00!, sTxt(11)
-                 Graphic_Print -26.00!, -4.00!, sTxt(12)
-                 Graphic_Print -26.00!, -3.00!, sTxt(13)
-                 Graphic_Print -26.00!, -2.00!, sTxt(14)
-                 Graphic_Print -26.00!, -1.00!, sTxt(15)
+                 GRAPHIC SET POS(-26.00!,-5.00!):GRAPHIC PRINT sTxt(11)
+                 GRAPHIC SET POS(-26.00!,-4.00!):GRAPHIC PRINT sTxt(12)
+                 GRAPHIC SET POS(-26.00!,-3.00!):GRAPHIC PRINT sTxt(13)
+                 GRAPHIC SET POS(-26.00!,-2.00!):GRAPHIC PRINT sTxt(14)
+                 GRAPHIC SET POS(-26.00!,-1.00!):GRAPHIC PRINT sTxt(15)
 
-                 Graphic_Redraw 1                             'Re-Draw the screen snappaly
+                 GRAPHIC REDRAW                              'Re-Draw the screen snappaly
 
                  IF (@sPath.yImgSeg(lCtr&)=0) AND (@sPath.xImgSeg(lCtr&)<>0) THEN 'x index
-                     IF %UseSleep THEN SLEEP 10
+                     SLEEP 10
                  END IF
 
             NEXT
 
-            IF %UseSleep THEN SLEEP 10 '500
+            SLEEP 10 '500
         NEXT
 
 
@@ -2446,12 +2428,11 @@ END SUB
 
 
 
-
 'END USER DEFINED FUNCTIONS
 '**********************************************************************************************************************************************
 
 
-SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL CanvasySCRN&, BYVAL MyPixPerInch!)
+FUNCTION PBMAIN
 
 
     DIM nRay AS FociRay
@@ -2471,7 +2452,7 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
 
     LOCAL BackClr&, ForeClr&, PlotClr&, HighClr&, LowClr&, NormClr&, Clr1&, Clr2&, Clr3&
 
-'     DIM hWin(1)AS LONG ' Graphic Window handles    ' not needed anymore
+    DIM hWin(1)AS LONG ' Graphic Window handles
 
     LOCAL hWinCheck& 'check if user closed window
 
@@ -2481,13 +2462,9 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     '*******************************************************************************************
     ' Screen plot settings
     '*******************************************************************************************
-    ' ySCRN& = 1800 : xSCRN& = 1000
-    ySCRN& = CanvasxSCRN& : xSCRN& = CanvasySCRN&   ' Graphic window X/Y axis opposite of scanner
-'    ySCRN& and xScrn& do not affect the size of the image, but simply affects clipping of the image. It is always centered in the Canvas
-'    PixPerInch! = 0.04!  '0.035! '0.05! '0.010! '.040!   ' graphic window size
-    PixPerInch! = MyPixPerInch!
-    ' as PixPerInch! increases the image gets smaller and can fit better into a different size Canvas (smaller)
-    ' xScrn& seems to only effect clipping, not size of image
+    ySCRN& = 1800 : xSCRN& = 1000
+
+    PixPerInch! = 0.04!  '0.035! '0.05! '0.010! '.040!   ' graphic window size
 
     yScrn1! = -(ySCRN& * .400!* PixPerInch!) : yScrn2! = ySCRN& * .400!* PixPerInch!
 
@@ -2500,37 +2477,24 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     '----------------------------------------------------------------------------------------------------
 
     'assigned even numbers for standard windows, direct display
-    ' APP Creates window, not this routine now
-'     GRAPHIC WINDOW "NOZZLE 'Top View'", 10, 10, ySCRN&, xSCRN& TO hWin(0) 'Create a graphic window and assign it a handle
-
-    ' -------------------------------------------
-    ' Default pixels used here
-    Graphic_Attach 0, 0                                         'Select standard window
-    Graphic_Color ForeClr&, BackClr&                            'Set foreground and  background color
-    Graphic_Clear                                               'Clear selected window with background color
-    Graphic_Render                                              'Render drawing. Only required in EZGUI version
-    ' -------------------------------------------
-'    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!
+    GRAPHIC WINDOW "NOZZLE 'Top View'", 10, 10, ySCRN&, xSCRN& TO hWin(0) 'Create a graphic window and assign it a handle
+    GRAPHIC ATTACH hWin(0), 0&                                  'Select standard window
+    GRAPHIC COLOR ForeClr&, BackClr&                            'Set foreground and  background color
+    GRAPHIC CLEAR                                               'Clear selected window with background color
+    GRAPHIC SCALE(yScrn1!,xScrn1!)-(yScrn2!,xScrn2!)
 
     'assigned odd numbers for bitmaps or special use windows, used to store static images for copying to standard window
-    ' app creates bitmap, not this routine now
-'     GRAPHIC BITMAP NEW ySCRN&, xSCRN& TO hWin(1) 'bitmap window for current nozzle weld scan model
+    GRAPHIC BITMAP NEW ySCRN&, xSCRN& TO hWin(1) 'bitmap window for current nozzle weld scan model
+    GRAPHIC ATTACH hWin(1), 0&                   'Select bitmap window #1
+    GRAPHIC COLOR ForeClr&, BackClr&             'Set foreground and  background color
+    GRAPHIC CLEAR                                'Clear selected window with background color
+    GRAPHIC SCALE(yScrn1!,xScrn1!)-(yScrn2!,xScrn2!)
 
-    ' -------------------------------------------
-    ' Default Pixels used here
-    Graphic_Attach 1, 0                          'Select bitmap window #1
-    Graphic_Color ForeClr&, BackClr&             'Set foreground and  background color
-    Graphic_Clear                                'Clear selected window with background color
-    Graphic_Render                               'Render drawing. Only required in EZGUI version
-    ' -------------------------------------------
-'    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!
-
-    Graphic_Attach 0, %REDRAW      'Select standard window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
+    GRAPHIC ATTACH hWin(0), 0&, REDRAW       'Select standard window
     'GRAPHIC WINDOW STABILIZE hWin(0) 'user can't close window
+    GRAPHIC SET FOCUS
 
-
-    Graphic_Font 12
+    GRAPHIC FONT "Times New Roman", 12, 1
 '    GRAPHIC SET FONT hFont&
 
 
@@ -2552,19 +2516,15 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     nRay.thetaS = Rads270 '= Rads270 'OR: Rads180 Rads90 Rads0 'set start angle / position
 
     nRay.i_xExtraIndx = 2
-    Graphic_Render                                              'Render drawing. Only required in EZGUI version
 
-    Graphic_Attach 0, %REDRAW          'select standard window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
+    GRAPHIC ATTACH hWin(0), 0&,REDRAW           'select standard window
 
-    Graphic_Font 20
+    GRAPHIC FONT "Times New Roman", 20, 1
 '    GRAPHIC SET FONT hFont&
 
     GenerateModel(VARPTR(nRay))
 
-    Graphic_Font 12
-
-    Graphic_Render
+    GRAPHIC FONT "Times New Roman", 12, 1
 '    GRAPHIC SET FONT hFont&
 '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -2577,14 +2537,14 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
 '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     'user set colors for model
-    u_GFX.eStartClr = %RGB_GREEN        'scan start; outer radial line color
+    u_GFX.eStartClr = %GREEN        'scan start; outer radial line color
     u_GFX.eEndClr = %RGB_RED        'scan end; outer radial line color
-    u_GFX.eExtraClr = %RGB_MAGENTA      'scan extra; outer radial line color
+    u_GFX.eExtraClr = %MAGENTA      'scan extra; outer radial line color
     u_GFX.eRadialClr = %RGB_GOLD    'all other; outer scan radial scan line
     u_GFX.eInsideClr = %RGB_GOLD    'center inside; radial line line color
-    u_GFX.eOutPClr = %RGB_BLUE          'outer perimeter; line color
-    u_GFX.eWeldClr = %RGB_GREEN         'weld; radial line color
-    u_GFX.eWeldPClr = %RGB_GREEN        'weld; perimeter line color
+    u_GFX.eOutPClr = %BLUE          'outer perimeter; line color
+    u_GFX.eWeldClr = %GREEN         'weld; radial line color
+    u_GFX.eWeldPClr = %GREEN        'weld; perimeter line color
     u_GFX.eHAZClr = %RGB_RED        'HAZ; radial line color
     u_GFX.eHAZPClr = %RGB_RED       'HAZ; perimeter line color
 
@@ -2595,164 +2555,200 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     nRay.Weld_Width = 1.00#         'width of weldment
 
     'select and draw the model to bitmap #1
-    Graphic_Attach 1, 0     'Select bitmap #1 window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
-
-    Graphic_Clear  ' clear the current screen before plotting
+    GRAPHIC ATTACH hWin(1), 0&  'Select bitmap #1 window
+    GRAPHIC CLEAR  ' clear the current screen before plotting
 
     DrawScanModel(VARPTR(nRay), VARPTR(u_GFX)) 'draw the model bitmap to reuse later
 
-    Graphic_Render                                              'Render drawing. Only required in EZGUI version
+    GRAPHIC ATTACH hWin(0), 0&,REDRAW           'select standard window
 
-    Graphic_Attach 0, %REDRAW          'select standard window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
+    GRAPHIC COPY hwin(1), 0&
 
-    Graphic_Copy
+#IF %App_Scan1
+    GOTO CircScan  'User selected Circ UT Beam Scan Path Segments: "GenCircSegments"
+#ELSE
 
-    SELECT CASE ScanType&
-        CASE 1
-            'OR          'User selected Axial UT Beam Scan Path Segments: "GenAxialSegments", below
+#ENDIF
 
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            '               GENERATE AXIAL SCAN PATH SEGMENTS
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    'OR          'User selected Axial UT Beam Scan Path Segments: "GenAxialSegments", below
 
-            'USER selects generation of either Axial UT Beam Scan Path Segments: "GenAxialSegments"
-            'OR USER selects generation of Circ UT Beam Scan Path Segments: "GenCircSegments"
-            'Circ UT Beam: UT sound beam travels parallel to the weld axis
-            'Axial UT Beam: UT sound beam travels perpendicular the the weld axis
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'               GENERATE AXIAL SCAN PATH SEGMENTS
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            'user set Y-Scan begin and end
-            'nRay.r_yBegin = y scan start
-            'nRay.r_yEnd = = y scan end
-            nRay.r_yBegin = 0.800# :  nRay.r_yEnd = 10.800#
+    'USER selects generation of either Axial UT Beam Scan Path Segments: "GenAxialSegments"
+    'OR USER selects generation of Circ UT Beam Scan Path Segments: "GenCircSegments"
+    'Circ UT Beam: UT sound beam travels parallel to the weld axis
+    'Axial UT Beam: UT sound beam travels perpendicular the the weld axis
 
-            'addtional value needed if nRay.RasterAxial = False, meaning raster motion is Circ direction
-            nRay.r_yIndexInc = 1.00#  'index increment for Circ Raster
+    'user set Y-Scan begin and end
+    'nRay.r_yBegin = y scan start
+    'nRay.r_yEnd = = y scan end
+    nRay.r_yBegin = 0.800# :  nRay.r_yEnd = 10.800#
 
-            'set by user, RasterAxial is back and forth scan motion, to and from the weld
-            'If RasterAxial is False, scan motion is side to side, parallel along the weld
-            IF RasterAxial& THEN
-                nRay.RasterAxial = True 'False
-            ELSE
-                nRay.RasterAxial = False
-            END IF
-            GenAxialSegments (VARPTR(nRay),VARPTR(sPath))
+    'addtional value needed if nRay.RasterAxial = False, meaning raster motion is Circ direction
+    nRay.r_yIndexInc = 1.00#  'index increment for Circ Raster
 
-
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            '               RUN THE ABOVE GENERATE AXIAL SCAN PATH, SIMULATOR AND/OR ACTUAL SCANNER
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-                u_GFX.aprobeClr = %RGB_YELLOW      'probe perimeter case color
-                u_GFX.aprobefillClr = %RGB_ORANGE  'probe fill color
-                u_GFX.TngtLineClr = %RGB_RED            'tangent line color for/if probe skew
-                u_GFX.NormLineClr = %RGB_RED            'normal line color for/if probe skew
-                u_GFX.CentLineClr = %RGB_WHITE          'probe center line color, probe beam
-                u_GFX.IdxLineClr = %RGB_WHITE           'probe index line color
-                u_GFX.offsetBallClr = %RGB_WHITE  'ball at offset color
-                u_GFX.probeBallClr = %RGB_BLACK   'ball at probe center color
-
-                u_GFX.ballRad = 0.200#    'meatball radius
-                u_GFX.IdxLine = 10
-                u_GFX.CentLine = 10
-                u_GFX.TngtLine = 10
-                u_GFX.NormLine = 10
-
-                'user input: Axial Probe length, width and index
-                u_SCN.aProbeLen = 2.200# 'transducer length
-                u_SCN.aProbeIdx = .800#   '1.00# '0.800# 'transducer index position, measured setback from front
-                u_SCN.aProbeWidth = 2.600# 'transducer width
-
-                RunAxialScan(VARPTR(nRay), VARPTR(sPath),  VARPTR(u_SCN), VARPTR(u_GFX))
-
-                Graphic_Redraw 0   ' end attachment to window
-
-        CASE 2
-            'User selected Circ UT Beam Scan Path Segments: "GenCircSegments"
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            '               GENERATE CIRC SCAN PATH SEGMENTS
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            'USER selects generation of either Axial UT Beam Scan Path Segments: "GenAxialSegments"
-            'OR USER selects generation of Circ UT Beam Scan Path Segments: "GenCircSegments"
-            'Circ UT Beam: UT sound beam travels parallel to the weld axis
-            'Axial UT Beam: UT sound beam travels perpendicular the the weld axis
-
-            'these values have already been set, and should match, "DrawScanModel"  generated above
-            'nRay.r_yEnd value would be much smaller here for a CIRC UT BEAM scan, probably 2" or less
-            nRay.r_yBegin = -1.60# '0'0.800# :
-            nRay.r_yEnd = 0.10# '10.800#
-
-            'addtional value needed if nRay.RasterAxial = False, meaning raster motion is Circ direction
-            nRay.r_yIndexInc = .250#  'index increment for Circ Raster
-
-            'set by user, RasterAxial is back and forth scan motion, to and from the weld
-            'If RasterAxial is False, scan motion is side to side, parallel along the weld
-            'normal for a CIRC UT BEAM Scan is RasterAxial = False
-
-            IF RasterAxial& THEN
-                nRay.RasterAxial = True 'False
-            ELSE
-                nRay.RasterAxial = False
-            END IF
+    'set by user, RasterAxial is back and forth scan motion, to and from the weld
+    'If RasterAxial is False, scan motion is side to side, parallel along the weld
+#IF %App_RasterAxial
+    nRay.RasterAxial = True 'False
+#ELSE
+    nRay.RasterAxial = False
+#ENDIF
+    GenAxialSegments (VARPTR(nRay),VARPTR(sPath))
 
 
-            'In addtion to above values, specific to a CIRC UT BEAM Scan as opposed to a AXIAL UT BEAM Scan,
-            'being more complex, requires the additional parameters:
-            '!!BOTH MUST BE SET to either positive or negative!!
-            nRay.skewDegs = 12.00#  'transducer skew: -skewDegs = transducer on -side, UT Beam pointing CW
-            nRay.xOffset = 8.00#    'transducer offset, index distance, to UT beam @ ID
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'               RUN THE ABOVE GENERATE AXIAL SCAN PATH, SIMULATOR AND/OR ACTUAL SCANNER
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            'OR:
+    u_GFX.aprobeClr = %RGB_YELLOW      'probe perimeter case color
+    u_GFX.aprobefillClr = %RGB_ORANGE  'probe fill color
+    u_GFX.TngtLineClr = %RGB_RED            'tangent line color for/if probe skew
+    u_GFX.NormLineClr = %RGB_RED            'normal line color for/if probe skew
+    u_GFX.CentLineClr = %RGB_WHITE          'probe center line color, probe beam
+    u_GFX.IdxLineClr = %RGB_WHITE           'probe index line color
+    u_GFX.offsetBallClr = %RGB_WHITE  'ball at offset color
+    u_GFX.probeBallClr = %RGB_BLACK   'ball at probe center color
 
-            'nRay.skewDegs = -12.00#  'transducer skew: +skewDegs = transducer on +side, UT Beam pointing CCW
-            'nRay.xOffset = -5.00#    'transducer offset, index distance, to UT beam @ ID
+    u_GFX.ballRad = 0.200#    'meatball radius
+    u_GFX.IdxLine = 10
+    u_GFX.CentLine = 10
+    u_GFX.TngtLine = 10
+    u_GFX.NormLine = 10
 
-            GenCircSegments (VARPTR(nRay),VARPTR(sPath))
+    'user input: Axial Probe length, width and index
+    u_SCN.aProbeLen = 2.200# 'transducer length
+    u_SCN.aProbeIdx = .800#   '1.00# '0.800# 'transducer index position, measured setback from front
+    u_SCN.aProbeWidth = 2.600# 'transducer width
 
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            '               RUN THE ABOVE GENERATE CIRC SCAN PATH, SIMULATOR AND/OR ACTUAL SCANNER
-            '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    RunAxialScan(VARPTR(nRay), VARPTR(sPath),  VARPTR(u_SCN), VARPTR(u_GFX), VARPTR(hWin(1)))
 
-            u_GFX.cprobeClr = %RGB_LIGHTYELLOW      'probe perimeter case color
-            u_GFX.cprobefillClr = %RGB_ORANGE       'probe fill color
-            u_GFX.TngtLineClr = %RGB_RED            'tangent line color for/if probe skew
-            u_GFX.NormLineClr = %RGB_RED            'normal line color for/if probe skew
-            u_GFX.CentLineClr = %RGB_WHITE          'probe center line color, probe beam
-            u_GFX.IdxLineClr = %RGB_WHITE           'probe index line color
-            u_GFX.offsetBallClr = %RGB_WHITE        'ball at offset color
-            u_GFX.probeBallClr = %RGB_BLACK         'ball at probe center color
-            u_GFX.ballRad = 0.200#                  'meatball radius
+    BEEP
 
-            u_GFX.IdxLine = 10
-            u_GFX.CentLine = 10
-            u_GFX.TngtLine = 10
-            u_GFX.NormLine = 10
+    PRINT "WAITKEY$"
 
+    WAITKEY$
 
-            'user input: Circ Probe Skew, length, width and index
-            u_SCN.cProbeLen = 2.200# 'transducer length
-            u_SCN.cProbeIdx = .800#   '1.00# '0.800# 'transducer index position, measured setback from front
-            u_SCN.cProbeWidth = 2.600# 'transducer width
+    GOTO ExitWindows
 
-            'probe X offset distance, projected at 90 degrees from polar scan line, parallel with weld axis, based on beam angle and weld thickness
-            'If offsetset is negative, cProbeIdx & cProbeLen is also negative
-            u_SCN.cProbeXOffset = nRay.xOffset ' -7  '-6.20#  'Set to negative if transducer beam is pointing CW, Positive if beam is pointing CCW
-
-            IF u_SCN.cProbeXOffset < 0 THEN
-               u_SCN.cProbeSkew = ABS(nRay.skewDegs) 'opposite nRay.skew
-               u_SCN.cProbeIdx = -(0.800#) 'set to (-) 'transducer index position, measured setback from front
-               u_SCN.cProbeLen = -(2.200#) 'set to (-) 'probe length
-            ELSE
-               u_SCN.cProbeSkew = -(nRay.skewDegs) ' opposite nRay.skew
-               u_SCN.cProbeIdx = (0.800#) 'set to (+) 'transducer index position, measured setback from front
-               u_SCN.cProbeLen = (2.200#) 'set to (+) 'probe length
-            END IF
-
-            RunCircScan(VARPTR(nRay), VARPTR(sPath),  VARPTR(u_SCN), VARPTR(u_GFX))
-            Graphic_Redraw 0   ' end attachment to window
-        CASE ELSE
-    END SELECT
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'EXIT THE PROGRAM FOR NOW
 
 
-END SUB
+
+CircScan:
+
+     'User selected Circ UT Beam Scan Path Segments: "GenCircSegments"
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'               GENERATE CIRC SCAN PATH SEGMENTS
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    'USER selects generation of either Axial UT Beam Scan Path Segments: "GenAxialSegments"
+    'OR USER selects generation of Circ UT Beam Scan Path Segments: "GenCircSegments"
+    'Circ UT Beam: UT sound beam travels parallel to the weld axis
+    'Axial UT Beam: UT sound beam travels perpendicular the the weld axis
+
+    'these values have already been set, and should match, "DrawScanModel"  generated above
+    'nRay.r_yEnd value would be much smaller here for a CIRC UT BEAM scan, probably 2" or less
+    nRay.r_yBegin = -1.60# '0'0.800# :
+    nRay.r_yEnd = 0.10# '10.800#
+
+    'addtional value needed if nRay.RasterAxial = False, meaning raster motion is Circ direction
+    nRay.r_yIndexInc = .250#  'index increment for Circ Raster
+
+    'set by user, RasterAxial is back and forth scan motion, to and from the weld
+    'If RasterAxial is False, scan motion is side to side, parallel along the weld
+    'normal for a CIRC UT BEAM Scan is RasterAxial = False
+#IF %App_RasterAxial
+    nRay.RasterAxial = True 'False
+#ELSE
+    nRay.RasterAxial = False
+#ENDIF
+
+    'In addtion to above values, specific to a CIRC UT BEAM Scan as opposed to a AXIAL UT BEAM Scan,
+    'being more complex, requires the additional parameters:
+    '!!BOTH MUST BE SET to either positive or negative!!
+    nRay.skewDegs = 12.00#  'transducer skew: -skewDegs = transducer on -side, UT Beam pointing CW
+    nRay.xOffset = 8.00#    'transducer offset, index distance, to UT beam @ ID
+
+    'OR:
+
+    'nRay.skewDegs = -12.00#  'transducer skew: +skewDegs = transducer on +side, UT Beam pointing CCW
+    'nRay.xOffset = -5.00#    'transducer offset, index distance, to UT beam @ ID
+
+    GenCircSegments (VARPTR(nRay),VARPTR(sPath))
+
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'               RUN THE ABOVE GENERATE CIRC SCAN PATH, SIMULATOR AND/OR ACTUAL SCANNER
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    u_GFX.cprobeClr = %RGB_LIGHTYELLOW      'probe perimeter case color
+    u_GFX.cprobefillClr = %RGB_ORANGE       'probe fill color
+    u_GFX.TngtLineClr = %RGB_RED            'tangent line color for/if probe skew
+    u_GFX.NormLineClr = %RGB_RED            'normal line color for/if probe skew
+    u_GFX.CentLineClr = %RGB_WHITE          'probe center line color, probe beam
+    u_GFX.IdxLineClr = %RGB_WHITE           'probe index line color
+    u_GFX.offsetBallClr = %RGB_WHITE        'ball at offset color
+    u_GFX.probeBallClr = %RGB_BLACK         'ball at probe center color
+    u_GFX.ballRad = 0.200#                  'meatball radius
+
+    u_GFX.IdxLine = 10
+    u_GFX.CentLine = 10
+    u_GFX.TngtLine = 10
+    u_GFX.NormLine = 10
+
+
+    'user input: Circ Probe Skew, length, width and index
+    u_SCN.cProbeLen = 2.200# 'transducer length
+    u_SCN.cProbeIdx = .800#   '1.00# '0.800# 'transducer index position, measured setback from front
+    u_SCN.cProbeWidth = 2.600# 'transducer width
+
+    'probe X offset distance, projected at 90 degrees from polar scan line, parallel with weld axis, based on beam angle and weld thickness
+    'If offsetset is negative, cProbeIdx & cProbeLen is also negative
+    u_SCN.cProbeXOffset = nRay.xOffset ' -7  '-6.20#  'Set to negative if transducer beam is pointing CW, Positive if beam is pointing CCW
+
+    IF u_SCN.cProbeXOffset < 0 THEN
+       u_SCN.cProbeSkew = ABS(nRay.skewDegs) 'opposite nRay.skew
+       u_SCN.cProbeIdx = -(0.800#) 'set to (-) 'transducer index position, measured setback from front
+       u_SCN.cProbeLen = -(2.200#) 'set to (-) 'probe length
+    ELSE
+       u_SCN.cProbeSkew = -(nRay.skewDegs) ' opposite nRay.skew
+       u_SCN.cProbeIdx = (0.800#) 'set to (+) 'transducer index position, measured setback from front
+       u_SCN.cProbeLen = (2.200#) 'set to (+) 'probe length
+    END IF
+
+    RunCircScan(VARPTR(nRay), VARPTR(sPath),  VARPTR(u_SCN), VARPTR(u_GFX), VARPTR(hWin(1)))
+
+
+
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'EXIT THE PROGRAM FOR NOW
+
+
+    BEEP
+
+    PRINT "WAITKEY$"
+
+    WAITKEY$
+
+    GOTO ExitWindows
+
+
+
+ExitWindows:
+
+      'Close and exit all windows
+    GRAPHIC ATTACH hWin(0), 0&  'select the STANDARD Graphics window
+    GRAPHIC WINDOW END          'close the selected STANDARD Graphics window
+
+    GRAPHIC ATTACH hWin(1), 0&  'select the Memory Bitmap Graphics window
+    GRAPHIC BITMAP END          'close the selected Memory Bitmap Graphics window
+
+
+    BEEP
+
+
+    'END if
+
+    END FUNCTION

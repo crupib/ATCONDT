@@ -2564,7 +2564,7 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
 
     Graphic_Font 12
 
-    Graphic_Render
+'    Graphic_Render
 '    GRAPHIC SET FONT hFont&
 '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

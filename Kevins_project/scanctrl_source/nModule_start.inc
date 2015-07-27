@@ -31,6 +31,8 @@
 %RGB_GOLD     = &H0000CCCC???
 %RGB_LIGHTYELLOW = &H0088FFFF???
 
+MACRO CONST = MACRO
+
 MACRO Pi =  3.14159265358979323846#
 
 MACRO DegToRads(dpDegrees) = (dpDegrees * 0.0174532925199433#)
@@ -1207,7 +1209,7 @@ SUB GenerateModel(BYVAL RayPtr AS DWORD)
         doneCtr2 = ROUND( ((@Ray.thetaInc-@Ray.thetaS)*DoneRatio), 0      )
         IF DoneCtr2 <> DoneCtr1 THEN
            Graphic_Print 0,0,  "% DONE: " + STR$(doneCtr2)+ "       "
-           Graphic_Redraw 1
+           Graphic_Redraw
            DoneCtr1 = DoneCtr2
         END IF
 
@@ -2000,7 +2002,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 
         PlotAxProbe(xPos2#, yPos2#, zPos2#, @Ray.thetaS, SCNPtr, GFXPtr) 'Draw Transducer and features at current angle and position
 
-        Graphic_Redraw 1                              'Re-Draw the screen snappaly
+        Graphic_Redraw                              'Re-Draw the screen snappaly
 
   '     PRINT "Run Axial Scans"
 
@@ -2221,7 +2223,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
                  Graphic_Print -26.00!, -2.00!, sTxt(14)
                  Graphic_Print -26.00!, -1.00!, sTxt(15)
 
-                 Graphic_Redraw 1                              'Re-Draw the screen snappaly
+                 Graphic_Redraw                              'Re-Draw the screen snappaly
 
                  IF (@sPath.yImgSeg(lCtr&)=0) AND (@sPath.xImgSeg(lCtr&)<>0) THEN 'x index
                      IF %UseSleep THEN SLEEP 10
@@ -2246,7 +2248,7 @@ SUB RunAxialScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS
 '       K$ = INKEY$
 '    LOOP UNTIL K$ = ""
 
-'    BEEP : WAITKEY$
+    BEEP : WAITKEY$
 
 END SUB
 
@@ -2283,7 +2285,7 @@ SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS 
 
         PlotCircProbe(xPos2#, yPos2#, zPos2#, @Ray.thetaS, SCNPtr, GFXPtr) 'Draw Transducer and features at current angle and position
 
-        Graphic_Redraw 1                             'Re-Draw the screen snappaly
+        Graphic_Redraw                              'Re-Draw the screen snappaly
 
 '       PRINT "Run Circ Scan"
 
@@ -2424,7 +2426,7 @@ SUB RunCircScan(BYVAL RayPtr AS DWORD, BYVAL sPathPtr AS DWORD, BYVAL SCNPtr AS 
                  Graphic_Print -26.00!, -2.00!, sTxt(14)
                  Graphic_Print -26.00!, -1.00!, sTxt(15)
 
-                 Graphic_Redraw 1                             'Re-Draw the screen snappaly
+                 Graphic_Redraw                              'Re-Draw the screen snappaly
 
                  IF (@sPath.yImgSeg(lCtr&)=0) AND (@sPath.xImgSeg(lCtr&)<>0) THEN 'x index
                      IF %UseSleep THEN SLEEP 10
@@ -2503,30 +2505,21 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     ' APP Creates window, not this routine now
 '     GRAPHIC WINDOW "NOZZLE 'Top View'", 10, 10, ySCRN&, xSCRN& TO hWin(0) 'Create a graphic window and assign it a handle
 
-    ' -------------------------------------------
-    ' Default pixels used here
     Graphic_Attach 0, 0                                         'Select standard window
     Graphic_Color ForeClr&, BackClr&                            'Set foreground and  background color
     Graphic_Clear                                               'Clear selected window with background color
-    Graphic_Render                                              'Render drawing. Only required in EZGUI version
-    ' -------------------------------------------
-'    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!
+    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!
 
     'assigned odd numbers for bitmaps or special use windows, used to store static images for copying to standard window
     ' app creates bitmap, not this routine now
 '     GRAPHIC BITMAP NEW ySCRN&, xSCRN& TO hWin(1) 'bitmap window for current nozzle weld scan model
 
-    ' -------------------------------------------
-    ' Default Pixels used here
     Graphic_Attach 1, 0                          'Select bitmap window #1
     Graphic_Color ForeClr&, BackClr&             'Set foreground and  background color
     Graphic_Clear                                'Clear selected window with background color
-    Graphic_Render                               'Render drawing. Only required in EZGUI version
-    ' -------------------------------------------
-'    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!
+    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!
 
     Graphic_Attach 0, %REDRAW      'Select standard window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
     'GRAPHIC WINDOW STABILIZE hWin(0) 'user can't close window
 
 
@@ -2552,10 +2545,8 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     nRay.thetaS = Rads270 '= Rads270 'OR: Rads180 Rads90 Rads0 'set start angle / position
 
     nRay.i_xExtraIndx = 2
-    Graphic_Render                                              'Render drawing. Only required in EZGUI version
 
     Graphic_Attach 0, %REDRAW          'select standard window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
 
     Graphic_Font 20
 '    GRAPHIC SET FONT hFont&
@@ -2563,8 +2554,6 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
     GenerateModel(VARPTR(nRay))
 
     Graphic_Font 12
-
-    Graphic_Render
 '    GRAPHIC SET FONT hFont&
 '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -2596,16 +2585,11 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
 
     'select and draw the model to bitmap #1
     Graphic_Attach 1, 0     'Select bitmap #1 window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
-
     Graphic_Clear  ' clear the current screen before plotting
 
     DrawScanModel(VARPTR(nRay), VARPTR(u_GFX)) 'draw the model bitmap to reuse later
 
-    Graphic_Render                                              'Render drawing. Only required in EZGUI version
-
     Graphic_Attach 0, %REDRAW          'select standard window
-    Graphic_Scale yScrn1!, xScrn1!, yScrn2!, xScrn2!    ' must come right after Graphic_Attach or default pixel mode used
 
     Graphic_Copy
 
@@ -2665,8 +2649,6 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
                 u_SCN.aProbeWidth = 2.600# 'transducer width
 
                 RunAxialScan(VARPTR(nRay), VARPTR(sPath),  VARPTR(u_SCN), VARPTR(u_GFX))
-
-                Graphic_Redraw 0   ' end attachment to window
 
         CASE 2
             'User selected Circ UT Beam Scan Path Segments: "GenCircSegments"
@@ -2750,7 +2732,7 @@ SUB RunScan(BYVAL ScanType&, BYVAL RasterAxial&, BYVAL CanvasxSCRN&, BYVAL Canva
             END IF
 
             RunCircScan(VARPTR(nRay), VARPTR(sPath),  VARPTR(u_SCN), VARPTR(u_GFX))
-            Graphic_Redraw 0   ' end attachment to window
+
         CASE ELSE
     END SELECT
 
