@@ -1,24 +1,59 @@
-Classic PowerBASIC Console Compiler
-Classic PB/CC   Version 4.06 
-Copyright (c) 1998-2010 PowerBasic Inc.
+PowerBASIC 6 Console Compiler
+Copyright (c) 1998-2011 PowerBasic Inc.
 Englewood, Florida USA
 All Rights Reserved
 
-Primary source:  C:\ClasCC\KEVINS~2\SCANCT~1\scanctrl.bas   {7293 total lines}
-Target compilation:  scanctrl.exe
-Compile time:  0.1 seconds, at 8751600 lines/minute
+Primary source:  C:\Users\Bill\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas   {7293 total lines}
+Target compilation:  scanctrl.EXE
+Compile time:  0.3 seconds, at 1458600 lines/minute
 
-96788 bytes compiled code, 14810 bytes RTLibrary,
-3160 bytes string literals, and 7252 bytes dgroup.
+95024 bytes compiled code, 17024 bytes RTLibrary,
+3360 bytes string literals, and 8256 bytes dgroup.
 Executable stack size:  1048576 bytes.
-Disk image: 130560 bytes   Memory image: 25222 bytes.
+Disk image: 130048 bytes   Memory image: 28640 bytes.
 
 Component Files:
 ----------------
-C:\CLASCC\KEVINS~2\SCANCT~1\SCANCTRL.BAS
-.\INCLUDES\EZGUI50.INC
-.\INCLUDES\EZWMAIN50.INC
-NMODULE.INC
-BACKEND.INC
+C:\Users\Bill\Documents\GitHub\ATCONDT\Kevins_project\scanctrl_source\scanctrl.bas
+C:\USERS\BILL\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\INCLUDES\EZGUI50.INC
+C:\USERS\BILL\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\INCLUDES\EZWMAIN50.INC
+C:\USERS\BILL\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\NMODULE.INC
+C:\USERS\BILL\DOCUMENTS\GITHUB\ATCONDT\KEVINS_PROJECT\SCANCTRL_SOURCE\BACKEND.INC
 
 
+Code Extracted:
+---------------
+GRAPHIC_BACKCANVAS_DRAW
+GUI_XPOS
+GUI_XONOFF
+GUI_YPOS
+GUI_YONOFF
+GUI_RPOS
+GUI_RONOFF
+GUI_POLAR
+GUI_CARTESIAN
+GUI_ALLPOS
+GUI_ALLOFF
+GUI_ALLON
+GUI_EXTRASCAN
+GUI_JOGYPLUS
+GUI_JOGXMINUS
+GUI_JOGXPLUS
+GUI_JOGYMINUS
+GUI_JOGRPLUS
+GUI_JOGRMINUS
+GUI_TRACKBAR
+GUI_JOGCONT
+GUI_JOGSTEP
+GUI_EXTRA
+GUIMSGBOX
+GUIWARNINGBOX
+GUIQUESTIONBOX
+GRAPHIC_COLOREZ
+GRAPHIC_LINETO
+GRAPHIC_COPYBUFFER
+GRAPHIC_BOX
+GETX360
+GETRADIUSE
+GETRADIUSL
+GETRADIUSS
