@@ -1,0 +1,27 @@
+PowerBASIC 6 Console Compiler
+Copyright (c) 1998-2011 PowerBasic Inc.
+Englewood, Florida USA
+All Rights Reserved
+
+Primary source:  C:\Users\Bill\Documents\GitHub\ATCONDT\x86_test\x86_test_I_D.bas   {672 total lines}
+Target compilation:  x86_test_I_D.EXE
+Compile time:  0.1 seconds, at 806400 lines/minute
+
+7248 bytes compiled code, 8516 bytes RTLibrary,
+20 bytes string literals, and 3704 bytes dgroup.
+Executable stack size:  1048576 bytes.
+Disk image: 20480 bytes   Memory image: 12240 bytes.
+
+Component Files:
+----------------
+C:\Users\Bill\Documents\GitHub\ATCONDT\x86_test\x86_test_I_D.bas
+
+
+Code Extracted:
+---------------
+CHECK_NLUT
+CHECK_BLUT
+CHECK_ELUT
+CHECK_PLUT
+CHECK_VLUT
+GETDECODE
